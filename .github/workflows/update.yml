@@ -1,0 +1,68 @@
+name: Update MAVLink
+
+on:
+  schedule:
+    - cron: '0 0 1 * *' # every month
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Update MAVLink library
+        run: |
+          rm -rf mavlink
+          wget https://codeload.github.com/mavlink/c_library_v2/zip/master -O mavlink.zip
+          unzip -o mavlink.zip
+          mv c_library_v2-master mavlink
+          rm mavlink.zip
+      - name: Retrieve MAVLink version
+        id: mavlink_version
+        run: |
+          echo MAVLINK_BUILD_DATE=$(sed -n 's/^#define MAVLINK_BUILD_DATE "\(.*\)"/\1/p' mavlink/common/version.h) >> $GITHUB_OUTPUT
+          echo MAVLINK_CHANGED=$(git diff --quiet || echo "1") >> $GITHUB_OUTPUT
+      - name: Commit MAVLink update
+        if: steps.mavlink_version.outputs.MAVLINK_CHANGED == '1'
+        uses: EndBug/add-and-commit@v9
+        with:
+          message: MAVLink version ${{ steps.mavlink_version.outputs.MAVLINK_BUILD_DATE }}
+          push: false
+          author_name: github-actions[bot]
+          author_email: github-actions[bot]@users.noreply.github.com
+      - name: Bump tag (dry run)
+        id: bump
+        uses: anothrNick/github-tag-action@1.64.0
+        env:
+          DEFAULT_BUMP: patch
+          DRY_RUN: true
+          WITH_V: false
+      - name: Change version in library.properties
+        if: steps.mavlink_version.outputs.MAVLINK_CHANGED == '1'
+        id: version
+        run: sed -i "s/^version=.*$/version=${{ steps.bump.outputs.new_tag }}/g" library.properties
+      - name: Dump outputs
+        run: |
+          echo MAVLINK_CHANGED=${{ steps.mavlink_version.outputs.MAVLINK_CHANGED }}
+          echo MAVLINK_BUILD_DATE=${{ steps.mavlink_version.outputs.MAVLINK_BUILD_DATE }}
+          echo TAG=${{ steps.bump.outputs.tag }}
+          echo NEW_TAG=${{ steps.bump.outputs.new_tag }}
+      - name: Update versions list
+        if: steps.mavlink_version.outputs.MAVLINK_CHANGED == '1'
+        run: yq -i '."${{ steps.bump.outputs.new_tag }}" = "${{ steps.mavlink_version.outputs.MAVLINK_BUILD_DATE }}"' versions.yaml
+      - name: Commit version update, push changes
+        if: steps.mavlink_version.outputs.MAVLINK_CHANGED == '1'
+        uses: EndBug/add-and-commit@v9
+        with:
+          message: MAVLink version ${{ steps.mavlink_version.outputs.MAVLINK_BUILD_DATE }}
+          push: true
+          commit: --amend
+          author_name: github-actions[bot]
+          author_email: github-actions[bot]@users.noreply.github.com
+      - name: Bump version and push tag
+        if: steps.mavlink_version.outputs.MAVLINK_CHANGED == '1'
+        uses: anothrNick/github-tag-action@1.64.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: false
+          DEFAULT_BUMP: patch
