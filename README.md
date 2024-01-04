@@ -6,6 +6,19 @@ The underlying MAVLink protocol library automatically gets updated once a month.
 
 Official MAVLink documentation: https://mavlink.io/en/.
 
+## Installation
+
+### Arduino IDE
+
+Search for "MAVLink" in the Arduino IDE [library manager](https://docs.arduino.cc/software/ide-v2/tutorials/ide-v2-installing-a-library) and install the library.
+
+### arduino-cli
+
+```bash
+arduino-cli lib update-index
+arduino-cli lib install MAVLink
+```
+
 ## Usage
 
 ```cpp
