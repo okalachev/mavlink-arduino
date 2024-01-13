@@ -51,6 +51,8 @@ The default used [MAVLink dialect](https://mavlink.io/en/messages/#dialects) is 
 #include <MAVLink_matrixpilot.h>
 ```
 
+See examples in the [`examples`](examples) directory.
+
 ## Copyright
 
 Copyright for the Arduino library © Oleg Kalachev, 2024. License: [MIT](LICENSE.txt).
