@@ -350,6 +350,21 @@
         <param index="6" reserved="true"/>
         <param index="7" reserved="true"/>
       </entry>
+      <entry value="12900" name="MAV_CMD_ODID_SET_EMERGENCY" hasLocation="false" isDestination="false">
+        <description>Used to manually set/unset emergency status for remote id.
+          This is for compliance with MOC ASTM docs, specifically F358 section 7.7: "Emergency Status Indicator".
+          The requirement can also be satisfied by automatic setting of the emergency status by flight stack, and that approach is preferred.
+          See https://mavlink.io/en/services/opendroneid.html for more information.
+	</description>
+        <param index="1" label="Number" minValue="0" increment="1">Set/unset emergency 0: unset, 1: set</param>
+        <param index="2" reserved="true" default="NaN"/>
+        <param index="3" reserved="true" default="NaN"/>
+        <param index="4">Empty</param>
+        <param index="5">Empty</param>
+        <param index="5">Empty</param>
+        <param index="6">Empty</param>
+        <param index="7">Empty</param>
+      </entry>
     </enum>
     <enum name="TARGET_ABSOLUTE_SENSOR_CAPABILITY_FLAGS" bitmask="true">
       <description>These flags indicate the sensor reporting capabilities for TARGET_ABSOLUTE.</description>
@@ -459,6 +474,7 @@
       <description>Basic component information data. Should be requested using MAV_CMD_REQUEST_MESSAGE on startup, or when required.</description>
       <field type="uint32_t" name="time_boot_ms" units="ms">Timestamp (time since system boot).</field>
       <field type="uint64_t" name="capabilities" enum="MAV_PROTOCOL_CAPABILITY" display="bitmask">Component capability flags</field>
+      <field type="uint32_t" name="time_manufacture_s" units="s" invalid="0">Date of manufacture as a UNIX Epoch time (since 1.1.1970) in seconds.</field>
       <field type="char[32]" name="vendor_name">Name of the component vendor. Needs to be zero terminated. The field is optional and can be empty/all zeros.</field>
       <field type="char[32]" name="model_name">Name of the component model. Needs to be zero terminated. The field is optional and can be empty/all zeros.</field>
       <field type="char[24]" name="software_version">Software version. The recommended format is SEMVER: 'major.minor.patch'  (any format may be used). The field must be zero terminated if it has a value. The field is optional and can be empty/all zeros.</field>

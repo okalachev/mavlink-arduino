@@ -398,6 +398,24 @@
         <description>Velocity limiting active to prevent breach</description>
       </entry>
     </enum>
+    <!-- enum of fence types to enable or disable as a bitmask -->
+    <enum name="FENCE_TYPE" bitmask="true">
+      <entry value="0" name="FENCE_TYPE_ALL">
+        <description>All fence types</description>
+      </entry>
+      <entry value="1" name="FENCE_TYPE_ALT_MAX">
+        <description>Maximum altitude fence</description>
+      </entry>
+      <entry value="2" name="FENCE_TYPE_CIRCLE">
+        <description>Circle fence</description>
+      </entry>
+      <entry value="4" name="FENCE_TYPE_POLYGON">
+        <description>Polygon fence</description>
+      </entry>
+      <entry value="8" name="FENCE_TYPE_ALT_MIN">
+        <description>Minimum altitude fence</description>
+      </entry>
+    </enum>
     <!-- Camera Mount mode Enumeration -->
     <enum name="MAV_MOUNT_MODE">
       <deprecated since="2020-01" replaced_by="GIMBAL_MANAGER_FLAGS"/>
@@ -1697,7 +1715,7 @@
       <entry value="208" name="MAV_CMD_DO_PARACHUTE" hasLocation="false" isDestination="false">
         <description>Mission item/command to release a parachute or enable/disable auto release.</description>
         <param index="1" label="Action" enum="PARACHUTE_ACTION">Action</param>
-        <param index="2">Empty</param>
+        <param index="2" label="Types" enum="FENCE_TYPE">Fence types to enable or disable as a bitmask. A value of 0 indicates that all fences should be enabled or disabled. This parameter is ignored if param 1 has the value 2</param>
         <param index="3">Empty</param>
         <param index="4">Empty</param>
         <param index="5">Empty</param>
@@ -2397,6 +2415,16 @@
         <param index="7">Reserved (set to 0)</param>
       </entry>
       <!-- END of UAVCAN range -->
+      <entry value="5300" name="MAV_CMD_DO_SET_SAFETY_SWITCH_STATE" hasLocation="false" isDestination="false">
+        <description>Change state of safety switch.</description>
+        <param index="1" label="Desired State" enum="SAFETY_SWITCH_STATE">New safety switch state.</param>
+        <param index="2">Empty.</param>
+        <param index="3">Empty.</param>
+        <param index="4">Empty</param>
+        <param index="5">Empty.</param>
+        <param index="6">Empty.</param>
+        <param index="7">Empty.</param>
+      </entry>
       <entry value="10001" name="MAV_CMD_DO_ADSB_OUT_IDENT" hasLocation="false" isDestination="false">
         <description>Trigger the start of an ADSB-out IDENT. This should only be used when requested to do so by an Air Traffic Controller in controlled airspace. This starts the IDENT which is then typically held for 18 seconds by the hardware per the Mode A, C, and S transponder spec.</description>
         <param index="1">Reserved (set to 0)</param>
@@ -2407,6 +2435,7 @@
         <param index="6">Reserved (set to 0)</param>
         <param index="7">Reserved (set to 0)</param>
       </entry>
+      <!-- Entry 12900 reserved for MAV_CMD_ODID_SET_EMERGENCY in development.xml -->
       <!-- VALUES FROM 0-40000 are reserved for the common message set. Values from 40000 to UINT16_MAX are available for dialects -->
       <!-- BEGIN of payload range (30000 to 30999) -->
       <entry value="30001" name="MAV_CMD_PAYLOAD_PREPARE_DEPLOY" hasLocation="true" isDestination="true">
@@ -4986,6 +5015,17 @@
         <description>Mission has executed all mission items.</description>
       </entry>
     </enum>
+    <enum name="SAFETY_SWITCH_STATE">
+      <description>
+	Possible safety switch states.
+      </description>
+      <entry value="0" name="SAFETY_SWITCH_STATE_SAFE">
+        <description>Safety switch is engaged and vehicle should be safe to approach.</description>
+      </entry>
+      <entry value="1" name="SAFETY_SWITCH_STATE_DANGEROUS">
+        <description>Safety switch is NOT engaged and motors, propellers and other actuators should be considered active.</description>
+      </entry>
+    </enum>
   </enums>
   <messages>
     <message id="1" name="SYS_STATUS">
@@ -6379,7 +6419,7 @@
       <field type="float" name="yaw_rate" units="rad/s">Angular rate in yaw axis</field>
     </message>
     <message id="147" name="BATTERY_STATUS">
-      <description>Battery information. Updates GCS with flight controller battery status. Smart batteries also use this message, but may additionally send SMART_BATTERY_INFO.</description>
+      <description>Battery information. Updates GCS with flight controller battery status. Smart batteries also use this message, but may additionally send BATTERY_INFO.</description>
       <field type="uint8_t" name="id" instance="true">Battery ID</field>
       <field type="uint8_t" name="battery_function" enum="MAV_BATTERY_FUNCTION">Function of the battery</field>
       <field type="uint8_t" name="type" enum="MAV_BATTERY_TYPE">Type (chemistry) of the battery</field>
@@ -7362,26 +7402,33 @@
       <field type="int32_t" name="y">Y coordinate of center point.  Coordinate system depends on frame field: local = x position in meters * 1e4, global = latitude in degrees * 1e7.</field>
       <field type="float" name="z" units="m">Altitude of center point. Coordinate system depends on frame field.</field>
     </message>
-    <message id="370" name="SMART_BATTERY_INFO">
-      <description>Smart Battery information (static/infrequent update). Use for updates from: smart battery to flight stack, flight stack to GCS. Use BATTERY_STATUS for smart battery frequent updates.</description>
+    <message id="370" name="BATTERY_INFO">
+      <wip/>
+      <description>
+        Battery information that is static, or requires infrequent update.
+        This message should requested using MAV_CMD_REQUEST_MESSAGE and/or streamed at very low rate.
+        BATTERY_STATUS_V2 is used for higher-rate battery status information.
+      </description>
       <field type="uint8_t" name="id" instance="true">Battery ID</field>
-      <field type="uint8_t" name="battery_function" enum="MAV_BATTERY_FUNCTION">Function of the battery</field>
-      <field type="uint8_t" name="type" enum="MAV_BATTERY_TYPE">Type (chemistry) of the battery</field>
-      <field type="int32_t" name="capacity_full_specification" units="mAh" invalid="-1">Capacity when full according to manufacturer, -1: field not provided.</field>
-      <field type="int32_t" name="capacity_full" units="mAh" invalid="-1">Capacity when full (accounting for battery degradation), -1: field not provided.</field>
-      <field type="uint16_t" name="cycle_count" invalid="UINT16_MAX">Charge/discharge cycle count. UINT16_MAX: field not provided.</field>
-      <field type="char[16]" name="serial_number" invalid="[0]">Serial number in ASCII characters, 0 terminated. All 0: field not provided.</field>
-      <field type="char[50]" name="device_name" invalid="[0]">Static device name in ASCII characters, 0 terminated. All 0: field not provided. Encode as manufacturer name then product name separated using an underscore.</field>
-      <field type="uint16_t" name="weight" units="g" invalid="0">Battery weight. 0: field not provided.</field>
-      <field type="uint16_t" name="discharge_minimum_voltage" units="mV" invalid="UINT16_MAX">Minimum per-cell voltage when discharging. If not supplied set to UINT16_MAX value.</field>
-      <field type="uint16_t" name="charging_minimum_voltage" units="mV" invalid="UINT16_MAX">Minimum per-cell voltage when charging. If not supplied set to UINT16_MAX value.</field>
-      <field type="uint16_t" name="resting_minimum_voltage" units="mV" invalid="UINT16_MAX">Minimum per-cell voltage when resting. If not supplied set to UINT16_MAX value.</field>
-      <extensions/>
-      <field type="uint16_t" name="charging_maximum_voltage" units="mV" invalid="0">Maximum per-cell voltage when charged. 0: field not provided.</field>
+      <field type="uint8_t" name="battery_function" enum="MAV_BATTERY_FUNCTION">Function of the battery.</field>
+      <field type="uint8_t" name="type" enum="MAV_BATTERY_TYPE">Type (chemistry) of the battery.</field>
+      <field type="uint8_t" name="state_of_health" units="%" invalid="UINT8_MAX">State of Health (SOH) estimate. Typically 100% at the time of manufacture and will decrease over time and use. -1: field not provided.</field>
       <field type="uint8_t" name="cells_in_series" invalid="0">Number of battery cells in series. 0: field not provided.</field>
-      <field type="uint32_t" name="discharge_maximum_current" units="mA" invalid="0">Maximum pack discharge current. 0: field not provided.</field>
-      <field type="uint32_t" name="discharge_maximum_burst_current" units="mA" invalid="0">Maximum pack discharge burst current. 0: field not provided.</field>
-      <field type="char[11]" name="manufacture_date" invalid="[0]">Manufacture date (DD/MM/YYYY) in ASCII characters, 0 terminated. All 0: field not provided.</field>
+      <field type="uint16_t" name="cycle_count" invalid="UINT16_MAX">Lifetime count of the number of charge/discharge cycles (https://en.wikipedia.org/wiki/Charge_cycle). UINT16_MAX: field not provided.</field>
+      <field type="uint16_t" name="weight" units="g" invalid="0">Battery weight. 0: field not provided.</field>
+      <field type="float" name="discharge_minimum_voltage" units="V" invalid="0">Minimum per-cell voltage when discharging. 0: field not provided.</field>
+      <field type="float" name="charging_minimum_voltage" units="V" invalid="0">Minimum per-cell voltage when charging. 0: field not provided.</field>
+      <field type="float" name="resting_minimum_voltage" units="V" invalid="0">Minimum per-cell voltage when resting. 0: field not provided.</field>
+      <field type="float" name="charging_maximum_voltage" units="V" invalid="0">Maximum per-cell voltage when charged. 0: field not provided.</field>
+      <field type="float" name="charging_maximum_current" units="A" invalid="0">Maximum pack continuous charge current. 0: field not provided.</field>
+      <field type="float" name="nominal_voltage" units="V" invalid="0">Battery nominal voltage. Used for conversion between Wh and Ah. 0: field not provided.</field>
+      <field type="float" name="discharge_maximum_current" units="A" invalid="0">Maximum pack discharge current. 0: field not provided.</field>
+      <field type="float" name="discharge_maximum_burst_current" units="A" invalid="0">Maximum pack discharge burst current. 0: field not provided.</field>
+      <field type="float" name="design_capacity" units="Ah" invalid="0">Fully charged design capacity. 0: field not provided.</field>
+      <field type="float" name="full_charge_capacity" units="Ah" invalid="NaN">Predicted battery capacity when fully charged (accounting for battery degradation). NAN: field not provided.</field>
+      <field type="char[9]" name="manufacture_date" invalid="[0]">Manufacture date (DDMMYYYY) in ASCII characters, 0 terminated. All 0: field not provided.</field>
+      <field type="char[32]" name="serial_number" invalid="[0]">Serial number in ASCII characters, 0 terminated. All 0: field not provided.</field>
+      <field type="char[50]" name="name" invalid="[0]">Battery device name. Formatted as manufacturer name then product name, separated with an underscore (in ASCII characters), 0 terminated. All 0: field not provided.</field>
     </message>
     <message id="373" name="GENERATOR_STATUS">
       <description>Telemetry of power generation system. Alternator or mechanical generator.</description>
