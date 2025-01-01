@@ -14,28 +14,6 @@
         <description>True if the data from this sensor is being actively used by the flight controller for guidance, navigation or control.</description>
       </entry>
     </enum>
-    <!-- Transactions for parameter protocol -->
-    <enum name="PARAM_TRANSACTION_TRANSPORT">
-      <description>Possible transport layers to set and get parameters via mavlink during a parameter transaction.</description>
-      <entry value="0" name="PARAM_TRANSACTION_TRANSPORT_PARAM">
-        <description>Transaction over param transport.</description>
-      </entry>
-      <entry value="1" name="PARAM_TRANSACTION_TRANSPORT_PARAM_EXT">
-        <description>Transaction over param_ext transport.</description>
-      </entry>
-    </enum>
-    <enum name="PARAM_TRANSACTION_ACTION">
-      <description>Possible parameter transaction actions.</description>
-      <entry value="0" name="PARAM_TRANSACTION_ACTION_START">
-        <description>Commit the current parameter transaction.</description>
-      </entry>
-      <entry value="1" name="PARAM_TRANSACTION_ACTION_COMMIT">
-        <description>Commit the current parameter transaction.</description>
-      </entry>
-      <entry value="2" name="PARAM_TRANSACTION_ACTION_CANCEL">
-        <description>Cancel the current parameter transaction.</description>
-      </entry>
-    </enum>
     <enum name="MAV_STANDARD_MODE">
       <description>Standard modes with a well understood meaning across flight stacks and vehicle types.
         For example, most flight stack have the concept of a "return" or "RTL" mode that takes a vehicle to safety, even though the precise mechanics of this mode may differ.
@@ -88,33 +66,27 @@
           Other vehicle types must not support this mode (this may be revisited through the PR process).
         </description>
       </entry>
-      <entry value="5" name="MAV_STANDARD_MODE_RETURN_HOME">
-        <description>Return home mode (auto).
-          Automatic mode that returns vehicle to home via a safe flight path.
-          It may also automatically land the vehicle (i.e. RTL).
-          The precise flight path and landing behaviour depend on vehicle configuration and type.
-        </description>
-      </entry>
-      <entry value="6" name="MAV_STANDARD_MODE_SAFE_RECOVERY">
+      <entry value="5" name="MAV_STANDARD_MODE_SAFE_RECOVERY">
         <description>Safe recovery mode (auto).
-          Automatic mode that takes vehicle to a predefined safe location via a safe flight path (rally point or mission defined landing) .
-          It may also automatically land the vehicle.
+          Automatic mode that takes vehicle to a predefined safe location via a safe flight path, and may also automatically land the vehicle.
+          This mode is more commonly referred to as RTL and/or or Smart RTL.
           The precise return location, flight path, and landing behaviour depend on vehicle configuration and type.
+          For example, the vehicle might return to the home/launch location, a rally point, or the start of a mission landing, it might follow a direct path, mission path, or breadcrumb path, and land using a mission landing pattern or some other kind of descent.
         </description>
       </entry>
-      <entry value="7" name="MAV_STANDARD_MODE_MISSION">
+      <entry value="6" name="MAV_STANDARD_MODE_MISSION">
         <description>Mission mode (automatic).
           Automatic mode that executes MAVLink missions.
           Missions are executed from the current waypoint as soon as the mode is enabled.
         </description>
       </entry>
-      <entry value="8" name="MAV_STANDARD_MODE_LAND">
+      <entry value="7" name="MAV_STANDARD_MODE_LAND">
         <description>Land mode (auto).
           Automatic mode that lands the vehicle at the current location.
           The precise landing behaviour depends on vehicle configuration and type.
         </description>
       </entry>
-      <entry value="9" name="MAV_STANDARD_MODE_TAKEOFF">
+      <entry value="8" name="MAV_STANDARD_MODE_TAKEOFF">
         <description>Takeoff mode (auto).
           Automatic takeoff mode.
           The precise takeoff behaviour depends on vehicle configuration and type.
@@ -270,12 +242,6 @@
         INT32_MAX or NaN: Use current vehicle position, or current center if already loitering.</param>
         <param index="7" label="Altitude/Z">Center point altitude MSL/Z coordinate according to MAV_FRAME. If no MAV_FRAME specified, MAV_FRAME_GLOBAL is assumed.
         INT32_MAX or NaN: Use current vehicle altitude.</param>
-      </entry>
-      <entry value="900" name="MAV_CMD_PARAM_TRANSACTION" hasLocation="false" isDestination="false">
-        <description>Request to start or end a parameter transaction. Multiple kinds of transport layers can be used to exchange parameters in the transaction (param, param_ext and mavftp). The command response can either be a success/failure or an in progress in case the receiving side takes some time to apply the parameters.</description>
-        <param index="1" label="Action" enum="PARAM_TRANSACTION_ACTION">Action to be performed (start, commit, cancel, etc.)</param>
-        <param index="2" label="Transport" enum="PARAM_TRANSACTION_TRANSPORT">Possible transport layers to set and get parameters via mavlink during a parameter transaction.</param>
-        <param index="3" label="Transaction ID">Identifier for a specific transaction.</param>
       </entry>
       <entry value="247" name="MAV_CMD_DO_UPGRADE" hasLocation="false" isDestination="false">
         <description>Request a target system to start an upgrade of one (or all) of its components.
@@ -521,16 +487,6 @@
     </enum>
   </enums>
   <messages>
-    <!-- Transactions for parameter protocol -->
-    <message id="19" name="PARAM_ACK_TRANSACTION">
-      <description>Response from a PARAM_SET message when it is used in a transaction.</description>
-      <field type="uint8_t" name="target_system">Id of system that sent PARAM_SET message.</field>
-      <field type="uint8_t" name="target_component">Id of system that sent PARAM_SET message.</field>
-      <field type="char[16]" name="param_id">Parameter id, terminated by NULL if the length is less than 16 human-readable chars and WITHOUT null termination (NULL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string</field>
-      <field type="float" name="param_value">Parameter value (new value if PARAM_ACCEPTED, current value otherwise)</field>
-      <field type="uint8_t" name="param_type" enum="MAV_PARAM_TYPE">Parameter type.</field>
-      <field type="uint8_t" name="param_result" enum="PARAM_ACK">Result code.</field>
-    </message>
     <message id="295" name="AIRSPEED">
       <description>Airspeed information from a sensor.</description>
       <field type="uint8_t" name="id" instance="true">Sensor ID.</field>

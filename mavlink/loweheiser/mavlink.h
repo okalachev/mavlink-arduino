@@ -1,12 +1,12 @@
 /** @file
- *  @brief MAVLink comm protocol built from test.xml
+ *  @brief MAVLink comm protocol built from loweheiser.xml
  *  @see http://mavlink.org
  */
 #pragma once
 #ifndef MAVLINK_H
 #define MAVLINK_H
 
-#define MAVLINK_PRIMARY_XML_HASH -8398690706464834694
+#define MAVLINK_PRIMARY_XML_HASH 2758386944478752814
 
 #ifndef MAVLINK_STX
 #define MAVLINK_STX 253
@@ -29,6 +29,6 @@
 #endif
 
 #include "version.h"
-#include "test.h"
+#include "loweheiser.h"
 
 #endif // MAVLINK_H
