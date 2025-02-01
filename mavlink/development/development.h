@@ -10,7 +10,7 @@
     #error Wrong include order: MAVLINK_DEVELOPMENT.H MUST NOT BE DIRECTLY USED. Include mavlink.h from the same directory instead or set ALL AND EVERY defines from MAVLINK.H manually accordingly, including the #define MAVLINK_H call.
 #endif
 
-#define MAVLINK_DEVELOPMENT_XML_HASH -2376278495709121559
+#define MAVLINK_DEVELOPMENT_XML_HASH -8720870207380556488
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,90 +42,6 @@ typedef enum AIRSPEED_SENSOR_FLAGS
    AIRSPEED_SENSOR_USING=1, /* True if the data from this sensor is being actively used by the flight controller for guidance, navigation or control. | */
    AIRSPEED_SENSOR_FLAGS_ENUM_END=2, /*  | */
 } AIRSPEED_SENSOR_FLAGS;
-#endif
-
-/** @brief Standard modes with a well understood meaning across flight stacks and vehicle types.
-        For example, most flight stack have the concept of a "return" or "RTL" mode that takes a vehicle to safety, even though the precise mechanics of this mode may differ.
-        Modes may be set using MAV_CMD_DO_SET_STANDARD_MODE.
-       */
-#ifndef HAVE_ENUM_MAV_STANDARD_MODE
-#define HAVE_ENUM_MAV_STANDARD_MODE
-typedef enum MAV_STANDARD_MODE
-{
-   MAV_STANDARD_MODE_NON_STANDARD=0, /* Non standard mode.
-          This may be used when reporting the mode if the current flight mode is not a standard mode.
-         | */
-   MAV_STANDARD_MODE_POSITION_HOLD=1, /* Position mode (manual).
-          Position-controlled and stabilized manual mode.
-          When sticks are released vehicles return to their level-flight orientation and hold both position and altitude against wind and external forces.
-          This mode can only be set by vehicles that can hold a fixed position.
-          Multicopter (MC) vehicles actively brake and hold both position and altitude against wind and external forces.
-          Hybrid MC/FW ("VTOL") vehicles first transition to multicopter mode (if needed) but otherwise behave in the same way as MC vehicles.
-          Fixed-wing (FW) vehicles must not support this mode.
-          Other vehicle types must not support this mode (this may be revisited through the PR process).
-         | */
-   MAV_STANDARD_MODE_ORBIT=2, /* Orbit (manual).
-          Position-controlled and stabilized manual mode.
-          The vehicle circles around a fixed setpoint in the horizontal plane at a particular radius, altitude, and direction.
-          Flight stacks may further allow manual control over the setpoint position, radius, direction, speed, and/or altitude of the circle, but this is not mandated.
-          Flight stacks may support the [MAV_CMD_DO_ORBIT](https://mavlink.io/en/messages/common.html#MAV_CMD_DO_ORBIT) for changing the orbit parameters.
-          MC and FW vehicles may support this mode.
-          Hybrid MC/FW ("VTOL") vehicles may support this mode in MC/FW or both modes; if the mode is not supported by the current configuration the vehicle should transition to the supported configuration.
-          Other vehicle types must not support this mode (this may be revisited through the PR process).
-         | */
-   MAV_STANDARD_MODE_CRUISE=3, /* Cruise mode (manual).
-          Position-controlled and stabilized manual mode.
-          When sticks are released vehicles return to their level-flight orientation and hold their original track against wind and external forces.
-          Fixed-wing (FW) vehicles level orientation and maintain current track and altitude against wind and external forces.
-          Hybrid MC/FW ("VTOL") vehicles first transition to FW mode (if needed) but otherwise behave in the same way as MC vehicles.
-          Multicopter (MC) vehicles must not support this mode.
-          Other vehicle types must not support this mode (this may be revisited through the PR process).
-         | */
-   MAV_STANDARD_MODE_ALTITUDE_HOLD=4, /* Altitude hold (manual).
-          Altitude-controlled and stabilized manual mode.
-          When sticks are released vehicles return to their level-flight orientation and hold their altitude.
-          MC vehicles continue with existing momentum and may move with wind (or other external forces).
-          FW vehicles continue with current heading, but may be moved off-track by wind.
-          Hybrid MC/FW ("VTOL") vehicles behave according to their current configuration/mode (FW or MC).
-          Other vehicle types must not support this mode (this may be revisited through the PR process).
-         | */
-   MAV_STANDARD_MODE_SAFE_RECOVERY=5, /* Safe recovery mode (auto).
-          Automatic mode that takes vehicle to a predefined safe location via a safe flight path, and may also automatically land the vehicle.
-          This mode is more commonly referred to as RTL and/or or Smart RTL.
-          The precise return location, flight path, and landing behaviour depend on vehicle configuration and type.
-          For example, the vehicle might return to the home/launch location, a rally point, or the start of a mission landing, it might follow a direct path, mission path, or breadcrumb path, and land using a mission landing pattern or some other kind of descent.
-         | */
-   MAV_STANDARD_MODE_MISSION=6, /* Mission mode (automatic).
-          Automatic mode that executes MAVLink missions.
-          Missions are executed from the current waypoint as soon as the mode is enabled.
-         | */
-   MAV_STANDARD_MODE_LAND=7, /* Land mode (auto).
-          Automatic mode that lands the vehicle at the current location.
-          The precise landing behaviour depends on vehicle configuration and type.
-         | */
-   MAV_STANDARD_MODE_TAKEOFF=8, /* Takeoff mode (auto).
-          Automatic takeoff mode.
-          The precise takeoff behaviour depends on vehicle configuration and type.
-         | */
-   MAV_STANDARD_MODE_ENUM_END=9, /*  | */
-} MAV_STANDARD_MODE;
-#endif
-
-/** @brief Mode properties.
-       */
-#ifndef HAVE_ENUM_MAV_MODE_PROPERTY
-#define HAVE_ENUM_MAV_MODE_PROPERTY
-typedef enum MAV_MODE_PROPERTY
-{
-   MAV_MODE_PROPERTY_ADVANCED=1, /* If set, this mode is an advanced mode.
-          For example a rate-controlled manual mode might be advanced, whereas a position-controlled manual mode is not.
-          A GCS can optionally use this flag to configure the UI for its intended users.
-         | */
-   MAV_MODE_PROPERTY_NOT_USER_SELECTABLE=2, /* If set, this mode should not be added to the list of selectable modes.
-          The mode might still be selected by the FC directly (for example as part of a failsafe).
-         | */
-   MAV_MODE_PROPERTY_ENUM_END=3, /*  | */
-} MAV_MODE_PROPERTY;
 #endif
 
 /** @brief Battery status flags for fault, health and state indication. */
@@ -346,7 +262,8 @@ typedef enum MAV_CMD
    MAV_CMD_OVERRIDE_GOTO=252, /* Override current mission with command to pause mission, pause mission and move to position, continue/resume mission. When param 1 indicates that the mission is paused (MAV_GOTO_DO_HOLD), param 2 defines whether it holds in place or moves to another position. |MAV_GOTO_DO_HOLD: pause mission and either hold or move to specified position (depending on param2), MAV_GOTO_DO_CONTINUE: resume mission.| MAV_GOTO_HOLD_AT_CURRENT_POSITION: hold at current position, MAV_GOTO_HOLD_AT_SPECIFIED_POSITION: hold at specified position.| Coordinate frame of hold point.| Desired yaw angle.| Latitude/X position.| Longitude/Y position.| Altitude/Z position.|  */
    MAV_CMD_OBLIQUE_SURVEY=260, /* Mission command to set a Camera Auto Mount Pivoting Oblique Survey (Replaces CAM_TRIGG_DIST for this purpose). The camera is triggered each time this distance is exceeded, then the mount moves to the next position. Params 4~6 set-up the angle limits and number of positions for oblique survey, where mount-enabled vehicles automatically roll the camera between shots to emulate an oblique camera setup (providing an increased HFOV). This command can also be used to set the shutter integration time for the camera. |Camera trigger distance. 0 to stop triggering.| Camera shutter integration time. 0 to ignore| The minimum interval in which the camera is capable of taking subsequent pictures repeatedly. 0 to ignore.| Total number of roll positions at which the camera will capture photos (images captures spread evenly across the limits defined by param5).| Angle limits that the camera can be rolled to left and right of center.| Fixed pitch angle that the camera will hold in oblique mode if the mount is actuated in the pitch axis.| Empty|  */
    MAV_CMD_DO_SET_STANDARD_MODE=262, /* Enable the specified standard MAVLink mode.
-          If the mode is not supported the vehicle should ACK with MAV_RESULT_FAILED.
+          If the specified mode is not supported, the vehicle should ACK with MAV_RESULT_FAILED.
+          See https://mavlink.io/en/services/standard_modes.html
          |The mode to set.| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)| Reserved (default:NaN)|  */
    MAV_CMD_MISSION_START=300, /* start running a mission |first_item: the first mission item to run| last_item:  the last mission item to run (after this item is run, the mission ends)| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)|  */
    MAV_CMD_ACTUATOR_TEST=310, /* Actuator testing command. This is similar to MAV_CMD_DO_MOTOR_TEST but operates on the level of output functions, i.e. it is possible to test Motor1 independent from which output it is configured on. Autopilots typically refuse this command while armed. |Output value: 1 means maximum positive output, 0 to center servos or minimum motor thrust (expected to spin), -1 for maximum negative (if not supported by the motors, i.e. motor is not reversible, smaller than 0 maps to NaN). And NaN maps to disarmed (stop the motors).| Timeout after which the test command expires and the output is restored to the previous value. A timeout has to be set for safety reasons. A timeout of 0 means to restore the previous value immediately.| Reserved (default:0)| Reserved (default:0)| Actuator Output function| Reserved (default:0)| Reserved (default:0)|  */
@@ -501,7 +418,7 @@ typedef enum MAV_CMD
           Other components in the system should monitor for the CONTROL_STATUS message with this flag, and set their controlling GCS to match its published system id.
           A GCS that wants to control the system should also monitor for the same message and flag, and address the MAV_CMD_REQUEST_OPERATOR_CONTROL to its component id.
           Note that integrators are required to ensure that there is only one system manager component in the system (i.e. one component emitting the message with GCS_CONTROL_STATUS_FLAGS_SYSTEM_MANAGER set).
-   
+
           The MAV_CMD_REQUEST_OPERATOR_CONTROL command is sent by a GCS to the system manager component to request or release control of a system, specifying whether subsequent takeover requests from another GCS are automatically granted, or require permission.
 
           The system manager component should grant control to the GCS if the system does not require takeover permission (or is uncontrolled) and ACK the request with MAV_RESULT_ACCEPTED.
@@ -509,10 +426,10 @@ typedef enum MAV_CMD
 
           If the system manager component cannot grant control (because takeover requires permission), the request should be rejected with MAV_RESULT_FAILED.
           The system manager component should then send this same command to the current owning GCS in order to notify of the request.
-          The owning GCS would ACK with MAV_RESULT_ACCEPTED, and might choose to release control of the vehicle, or re-request control with the takeover bit set to allow permission. 
+          The owning GCS would ACK with MAV_RESULT_ACCEPTED, and might choose to release control of the vehicle, or re-request control with the takeover bit set to allow permission.
           In case it choses to re-request control with takeover bit set to allow permission, requestor GCS will only have 10 seconds to get control, otherwise owning GCS will re-request control with takeover bit set to disallow permission, and requestor GCS will need repeat the request if still interested in getting control.
           Note that the pilots of both GCS should co-ordinate safe handover offline.
-          
+
           Note that in most systems the only controlled component will be the "system manager component", and that will be the autopilot.
           However separate GCS control of a particular component is also permitted, if supported by the component.
           In this case the GCS will address MAV_CMD_REQUEST_OPERATOR_CONTROL to the specific component it wants to control.
@@ -668,9 +585,6 @@ typedef enum GPS_RAIM_STATE
 #include "./mavlink_msg_group_start.h"
 #include "./mavlink_msg_group_end.h"
 #include "./mavlink_msg_radio_rc_channels.h"
-#include "./mavlink_msg_available_modes.h"
-#include "./mavlink_msg_current_mode.h"
-#include "./mavlink_msg_available_modes_monitor.h"
 #include "./mavlink_msg_gnss_integrity.h"
 #include "./mavlink_msg_target_absolute.h"
 #include "./mavlink_msg_target_relative.h"
