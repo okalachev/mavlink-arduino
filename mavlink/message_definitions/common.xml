@@ -740,9 +740,6 @@
     <enum name="ESC_FAILURE_FLAGS" bitmask="true">
       <!-- This enum is work-in-progress and it can therefore change. It should NOT be used in stable production environments. -->
       <description>Flags to report ESC failures.</description>
-      <entry value="0" name="ESC_FAILURE_NONE">
-        <description>No ESC failure.</description>
-      </entry>
       <entry value="1" name="ESC_FAILURE_OVER_CURRENT">
         <description>Over current failure.</description>
       </entry>
@@ -810,7 +807,7 @@
         <description>Storage type is other, not listed type.</description>
       </entry>
     </enum>
-    <enum name="STORAGE_USAGE_FLAG">
+    <enum name="STORAGE_USAGE_FLAG" bitmask="true">
       <description>Flags to indicate usage for a particular storage (see STORAGE_INFORMATION.storage_usage and MAV_CMD_SET_STORAGE_USAGE).</description>
       <entry value="1" name="STORAGE_USAGE_FLAG_SET">
         <description>Always set to 1 (indicates STORAGE_INFORMATION.storage_usage is supported).</description>
@@ -2055,10 +2052,10 @@
         <description>Set the interval between messages for a particular MAVLink message ID. This interface replaces REQUEST_DATA_STREAM.</description>
         <param index="1" label="Message ID" minValue="0" maxValue="16777215" increment="1">The MAVLink message ID</param>
         <param index="2" label="Interval" units="us" minValue="-1" increment="1">The interval between two messages. -1: disable. 0: request default rate (which may be zero).</param>
-        <param index="3" label="Req Param 3">Use for index ID, if required. Otherwise, the use of this parameter (if any) must be defined in the requested message. By default assumed not used (0).</param>
+        <param index="3" label="Req Param 3">Use for index ID, if required. Otherwise, the use of this parameter (if any) must be defined in the requested message. By default assumed not used (0).  When used as an index ID, 0 means "all instances", "1" means the first instance in the sequence (the emitted message will have an id of 0 if message ids are 0-indexed, or 1 if index numbers start from one).</param>
         <param index="4" label="Req Param 4">The use of this parameter (if any), must be defined in the requested message. By default assumed not used (0).</param>
-        <param index="5" label="Req Param 5">The use of this parameter (if any), must be defined in the requested message. By default assumed not used (0).</param>
-        <param index="6" label="Req Param 6">The use of this parameter (if any), must be defined in the requested message. By default assumed not used (0).</param>
+        <param index="5" label="Req Param 5">The use of this parameter (if any), must be defined in the requested message. By default assumed not used (0/NaN).</param>
+        <param index="6" label="Req Param 6">The use of this parameter (if any), must be defined in the requested message. By default assumed not used (0/NaN).</param>
         <param index="7" label="Response Target" minValue="0" maxValue="2" increment="1">Target address of message stream (if message has target address fields). 0: Flight-stack default (recommended), 1: address of requestor, 2: broadcast.</param>
       </entry>
       <entry value="512" name="MAV_CMD_REQUEST_MESSAGE" hasLocation="false" isDestination="false">
@@ -2409,8 +2406,9 @@
       </entry>
       <entry value="5001" name="MAV_CMD_NAV_FENCE_POLYGON_VERTEX_INCLUSION" hasLocation="true" isDestination="false">
         <description>Fence vertex for an inclusion polygon (the polygon must not be self-intersecting). The vehicle must stay within this area. Minimum of 3 vertices required.
+          The vertices for a polygon must be sent sequentially, each with param1 set to the total number of vertices in the polygon.
         </description>
-        <param index="1" label="Vertex Count" minValue="3" increment="1">Polygon vertex count</param>
+        <param index="1" label="Vertex Count" minValue="3" increment="1">Polygon vertex count. This is the number of vertices in the current polygon (all vertices will have the same number).</param>
         <param index="2" label="Inclusion Group" minValue="0" increment="1">Vehicle must be inside ALL inclusion zones in a single group, vehicle must be inside at least one group, must be the same for all points in each polygon</param>
         <param index="3">Reserved</param>
         <param index="4">Reserved</param>
@@ -2420,8 +2418,9 @@
       </entry>
       <entry value="5002" name="MAV_CMD_NAV_FENCE_POLYGON_VERTEX_EXCLUSION" hasLocation="true" isDestination="false">
         <description>Fence vertex for an exclusion polygon (the polygon must not be self-intersecting). The vehicle must stay outside this area. Minimum of 3 vertices required.
+          The vertices for a polygon must be sent sequentially, each with param1 set to the total number of vertices in the polygon.                
         </description>
-        <param index="1" label="Vertex Count" minValue="3" increment="1">Polygon vertex count</param>
+        <param index="1" label="Vertex Count" minValue="3" increment="1">Polygon vertex count. This is the number of vertices in the current polygon (all vertices will have the same number).</param>
         <param index="2">Reserved</param>
         <param index="3">Reserved</param>
         <param index="4">Reserved</param>
@@ -3915,9 +3914,6 @@
     </enum>
     <enum name="CAMERA_TRACKING_TARGET_DATA" bitmask="true">
       <description>Camera tracking target data (shows where tracked target is within image)</description>
-      <entry value="0" name="CAMERA_TRACKING_TARGET_DATA_NONE">
-        <description>No target data</description>
-      </entry>
       <entry value="1" name="CAMERA_TRACKING_TARGET_DATA_EMBEDDED">
         <description>Target data embedded in image data (proprietary)</description>
       </entry>
@@ -4282,6 +4278,15 @@
       </entry>
       <entry value="209" name="MAV_TUNNEL_PAYLOAD_TYPE_STORM32_RESERVED9">
         <description>Registered for STorM32 gimbal controller.</description>
+      </entry>
+      <entry value="210" name="MAV_TUNNEL_PAYLOAD_TYPE_MODALAI_REMOTE_OSD">
+        <description>Registered for ModalAI remote OSD protocol.</description>
+      </entry>
+      <entry value="211" name="MAV_TUNNEL_PAYLOAD_TYPE_MODALAI_ESC_UART_PASSTHRU">
+        <description>Registered for ModalAI ESC UART passthru protocol.</description>
+      </entry>
+      <entry value="212" name="MAV_TUNNEL_PAYLOAD_TYPE_MODALAI_IO_UART_PASSTHRU">
+        <description>Registered for ModalAI vendor use.</description>
       </entry>
     </enum>
     <enum name="MAV_ODID_ID_TYPE">
@@ -4923,9 +4928,6 @@
     </enum>
     <enum name="HIL_SENSOR_UPDATED_FLAGS" bitmask="true">
       <description>Flags in the HIL_SENSOR message indicate which fields have updated since the last message</description>
-      <entry value="0" name="HIL_SENSOR_UPDATED_NONE">
-        <description>None of the fields in HIL_SENSOR have been updated</description>
-      </entry>
       <entry value="1" name="HIL_SENSOR_UPDATED_XACC">
         <description>The value in the xacc field has been updated</description>
       </entry>
@@ -4971,9 +4973,6 @@
     </enum>
     <enum name="HIGHRES_IMU_UPDATED_FLAGS" bitmask="true">
       <description>Flags in the HIGHRES_IMU message indicate which fields have updated since the last message</description>
-      <entry value="0" name="HIGHRES_IMU_UPDATED_NONE">
-        <description>None of the fields in HIGHRES_IMU have been updated</description>
-      </entry>
       <entry value="1" name="HIGHRES_IMU_UPDATED_XACC">
         <description>The value in the xacc field has been updated</description>
       </entry>
@@ -5012,9 +5011,6 @@
       </entry>
       <entry value="4096" name="HIGHRES_IMU_UPDATED_TEMPERATURE">
         <description>The value in the temperature field has been updated</description>
-      </entry>
-      <entry value="65535" name="HIGHRES_IMU_UPDATED_ALL">
-        <description>All fields in HIGHRES_IMU have been updated.</description>
       </entry>
     </enum>
     <enum name="CAN_FILTER_OP">
@@ -5269,6 +5265,11 @@
       <entry value="2" name="MAV_MODE_PROPERTY_NOT_USER_SELECTABLE">
         <description>If set, this mode should not be added to the list of selectable modes.
           The mode might still be selected by the FC directly (for example as part of a failsafe).
+        </description>
+      </entry>
+      <entry value="4" name="MAV_MODE_PROPERTY_AUTO_MODE">
+        <description>If set, this mode is automatically controlled (it may use but does not require a manual controller).
+          If unset the mode is a assumed to require user input (be a manual mode).
         </description>
       </entry>
     </enum>
@@ -6084,7 +6085,7 @@
       <field type="int16_t" name="zacc" units="mG">Z acceleration</field>
     </message>
     <message id="91" name="HIL_CONTROLS">
-      <description>Sent from autopilot to simulation. Hardware in the loop control outputs</description>
+      <description>Sent from autopilot to simulation. Hardware in the loop control outputs. Alternative to HIL_ACTUATOR_CONTROLS.</description>
       <field type="uint64_t" name="time_usec" units="us">Timestamp (UNIX Epoch time or time since system boot). The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude of the number.</field>
       <field type="float" name="roll_ailerons">Control output -1 .. 1</field>
       <field type="float" name="pitch_elevator">Control output -1 .. 1</field>
@@ -6115,7 +6116,7 @@
       <field type="uint8_t" name="rssi" invalid="UINT8_MAX">Receive signal strength indicator in device-dependent units/scale. Values: [0-254], UINT8_MAX: invalid/unknown.</field>
     </message>
     <message id="93" name="HIL_ACTUATOR_CONTROLS">
-      <description>Sent from autopilot to simulation. Hardware in the loop control outputs (replacement for HIL_CONTROLS)</description>
+      <description>Sent from autopilot to simulation. Hardware in the loop control outputs. Alternative to HIL_CONTROLS.</description>
       <field type="uint64_t" name="time_usec" units="us">Timestamp (UNIX Epoch time or time since system boot). The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude of the number.</field>
       <field type="float[16]" name="controls">Control outputs -1 .. 1. Channel assignment depends on the simulated hardware.</field>
       <field type="uint8_t" name="mode" enum="MAV_MODE_FLAG" display="bitmask">System mode. Includes arming state.</field>
@@ -6878,7 +6879,7 @@
       <field type="uint8_t" name="wind_heading" units="deg/2">Wind heading</field>
       <field type="uint8_t" name="eph" units="dm">Maximum error horizontal position since last message</field>
       <field type="uint8_t" name="epv" units="dm">Maximum error vertical position since last message</field>
-      <field type="int8_t" name="temperature_air" units="degC">Air temperature from airspeed sensor</field>
+      <field type="int8_t" name="temperature_air" units="degC">Air temperature</field>
       <field type="int8_t" name="climb_rate" units="dm/s">Maximum climb rate magnitude since last message</field>
       <field type="int8_t" name="battery" units="%" invalid="-1">Battery level (-1 if field not provided).</field>
       <field type="uint16_t" name="wp_num">Current waypoint number</field>
@@ -7103,7 +7104,7 @@
       <extensions/>
       <field type="uint8_t" name="type" enum="STORAGE_TYPE">Type of storage</field>
       <field type="char[32]" name="name">Textual storage name to be used in UI (microSD 1, Internal Memory, etc.) This is a NULL terminated string. If it is exactly 32 characters long, add a terminating NULL. If this string is empty, the generic type is shown to the user.</field>
-      <field type="uint8_t" name="storage_usage" enum="STORAGE_USAGE_FLAG">Flags indicating whether this instance is preferred storage for photos, videos, etc.
+      <field type="uint8_t" name="storage_usage" enum="STORAGE_USAGE_FLAG" display="bitmask">Flags indicating whether this instance is preferred storage for photos, videos, etc.
         Note: Implementations should initially set the flags on the system-default storage id used for saving media (if possible/supported).
         This setting can then be overridden using MAV_CMD_SET_STORAGE_USAGE.
         If the media usage flags are not set, a GCS may assume storage ID 1 is the default storage for all media types.</field>

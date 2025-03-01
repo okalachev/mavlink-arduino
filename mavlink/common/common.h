@@ -10,7 +10,7 @@
     #error Wrong include order: MAVLINK_COMMON.H MUST NOT BE DIRECTLY USED. Include mavlink.h from the same directory instead or set ALL AND EVERY defines from MAVLINK.H manually accordingly, including the #define MAVLINK_H call.
 #endif
 
-#define MAVLINK_COMMON_XML_HASH -763959451865368126
+#define MAVLINK_COMMON_XML_HASH -5317621451443134118
 
 #ifdef __cplusplus
 extern "C" {
@@ -472,7 +472,6 @@ typedef enum ESC_CONNECTION_TYPE
 #define HAVE_ENUM_ESC_FAILURE_FLAGS
 typedef enum ESC_FAILURE_FLAGS
 {
-   ESC_FAILURE_NONE=0, /* No ESC failure. | */
    ESC_FAILURE_OVER_CURRENT=1, /* Over current failure. | */
    ESC_FAILURE_OVER_VOLTAGE=2, /* Over voltage failure. | */
    ESC_FAILURE_OVER_TEMPERATURE=4, /* Over temperature failure. | */
@@ -855,7 +854,7 @@ typedef enum MAV_CMD
           Request the interval between messages for a particular MAVLink message ID.
           The receiver should ACK the command and then emit its response in a MESSAGE_INTERVAL message.
          |The MAVLink message ID| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)|  */
-   MAV_CMD_SET_MESSAGE_INTERVAL=511, /* Set the interval between messages for a particular MAVLink message ID. This interface replaces REQUEST_DATA_STREAM. |The MAVLink message ID| The interval between two messages. -1: disable. 0: request default rate (which may be zero).| Use for index ID, if required. Otherwise, the use of this parameter (if any) must be defined in the requested message. By default assumed not used (0).| The use of this parameter (if any), must be defined in the requested message. By default assumed not used (0).| The use of this parameter (if any), must be defined in the requested message. By default assumed not used (0).| The use of this parameter (if any), must be defined in the requested message. By default assumed not used (0).| Target address of message stream (if message has target address fields). 0: Flight-stack default (recommended), 1: address of requestor, 2: broadcast.|  */
+   MAV_CMD_SET_MESSAGE_INTERVAL=511, /* Set the interval between messages for a particular MAVLink message ID. This interface replaces REQUEST_DATA_STREAM. |The MAVLink message ID| The interval between two messages. -1: disable. 0: request default rate (which may be zero).| Use for index ID, if required. Otherwise, the use of this parameter (if any) must be defined in the requested message. By default assumed not used (0).  When used as an index ID, 0 means "all instances", "1" means the first instance in the sequence (the emitted message will have an id of 0 if message ids are 0-indexed, or 1 if index numbers start from one).| The use of this parameter (if any), must be defined in the requested message. By default assumed not used (0).| The use of this parameter (if any), must be defined in the requested message. By default assumed not used (0/NaN).| The use of this parameter (if any), must be defined in the requested message. By default assumed not used (0/NaN).| Target address of message stream (if message has target address fields). 0: Flight-stack default (recommended), 1: address of requestor, 2: broadcast.|  */
    MAV_CMD_REQUEST_MESSAGE=512, /* Request the target system(s) emit a single instance of a specified message (i.e. a "one-shot" version of MAV_CMD_SET_MESSAGE_INTERVAL). |The MAVLink message ID of the requested message.| Use for index ID, if required. Otherwise, the use of this parameter (if any) must be defined in the requested message. By default assumed not used (0).| The use of this parameter (if any), must be defined in the requested message. By default assumed not used (0).| The use of this parameter (if any), must be defined in the requested message. By default assumed not used (0).| The use of this parameter (if any), must be defined in the requested message. By default assumed not used (0).| The use of this parameter (if any), must be defined in the requested message. By default assumed not used (0).| Target address for requested message (if message has target address fields). 0: Flight-stack default, 1: address of requestor, 2: broadcast.|  */
    MAV_CMD_REQUEST_PROTOCOL_VERSION=519, /* Request MAVLink protocol version compatibility. All receivers should ACK the command and then emit their capabilities in an PROTOCOL_VERSION message |1: Request supported protocol versions by all nodes on the network| Reserved (all remaining params)| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)|  */
    MAV_CMD_REQUEST_AUTOPILOT_CAPABILITIES=520, /* Request autopilot capabilities. The receiver should ACK the command and then emit its capabilities in an AUTOPILOT_VERSION message |1: Request autopilot version| Reserved (all remaining params)| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)|  */
@@ -935,9 +934,11 @@ typedef enum MAV_CMD
    MAV_CMD_CONDITION_GATE=4501, /* Delay mission state machine until gate has been reached. |Geometry: 0: orthogonal to path between previous and next waypoint.| Altitude: 0: ignore altitude| Empty| Empty| Latitude| Longitude| Altitude|  */
    MAV_CMD_NAV_FENCE_RETURN_POINT=5000, /* Fence return point (there can only be one such point in a geofence definition). If rally points are supported they should be used instead. |Reserved| Reserved| Reserved| Reserved| Latitude| Longitude| Altitude|  */
    MAV_CMD_NAV_FENCE_POLYGON_VERTEX_INCLUSION=5001, /* Fence vertex for an inclusion polygon (the polygon must not be self-intersecting). The vehicle must stay within this area. Minimum of 3 vertices required.
-         |Polygon vertex count| Vehicle must be inside ALL inclusion zones in a single group, vehicle must be inside at least one group, must be the same for all points in each polygon| Reserved| Reserved| Latitude| Longitude| Reserved|  */
+          The vertices for a polygon must be sent sequentially, each with param1 set to the total number of vertices in the polygon.
+         |Polygon vertex count. This is the number of vertices in the current polygon (all vertices will have the same number).| Vehicle must be inside ALL inclusion zones in a single group, vehicle must be inside at least one group, must be the same for all points in each polygon| Reserved| Reserved| Latitude| Longitude| Reserved|  */
    MAV_CMD_NAV_FENCE_POLYGON_VERTEX_EXCLUSION=5002, /* Fence vertex for an exclusion polygon (the polygon must not be self-intersecting). The vehicle must stay outside this area. Minimum of 3 vertices required.
-         |Polygon vertex count| Reserved| Reserved| Reserved| Latitude| Longitude| Reserved|  */
+          The vertices for a polygon must be sent sequentially, each with param1 set to the total number of vertices in the polygon.                
+         |Polygon vertex count. This is the number of vertices in the current polygon (all vertices will have the same number).| Reserved| Reserved| Reserved| Latitude| Longitude| Reserved|  */
    MAV_CMD_NAV_FENCE_CIRCLE_INCLUSION=5003, /* Circular fence area. The vehicle must stay inside this area.
          |Radius.| Vehicle must be inside ALL inclusion zones in a single group, vehicle must be inside at least one group| Reserved| Reserved| Latitude| Longitude| Reserved|  */
    MAV_CMD_NAV_FENCE_CIRCLE_EXCLUSION=5004, /* Circular fence area. The vehicle must stay outside this area.
@@ -1770,7 +1771,6 @@ typedef enum CAMERA_TRACKING_MODE
 #define HAVE_ENUM_CAMERA_TRACKING_TARGET_DATA
 typedef enum CAMERA_TRACKING_TARGET_DATA
 {
-   CAMERA_TRACKING_TARGET_DATA_NONE=0, /* No target data | */
    CAMERA_TRACKING_TARGET_DATA_EMBEDDED=1, /* Target data embedded in image data (proprietary) | */
    CAMERA_TRACKING_TARGET_DATA_RENDERED=2, /* Target data rendered in image | */
    CAMERA_TRACKING_TARGET_DATA_IN_STATUS=4, /* Target data within status message (Point or Rectangle) | */
@@ -2040,7 +2040,10 @@ typedef enum MAV_TUNNEL_PAYLOAD_TYPE
    MAV_TUNNEL_PAYLOAD_TYPE_STORM32_RESERVED7=207, /* Registered for STorM32 gimbal controller. | */
    MAV_TUNNEL_PAYLOAD_TYPE_STORM32_RESERVED8=208, /* Registered for STorM32 gimbal controller. | */
    MAV_TUNNEL_PAYLOAD_TYPE_STORM32_RESERVED9=209, /* Registered for STorM32 gimbal controller. | */
-   MAV_TUNNEL_PAYLOAD_TYPE_ENUM_END=210, /*  | */
+   MAV_TUNNEL_PAYLOAD_TYPE_MODALAI_REMOTE_OSD=210, /* Registered for ModalAI remote OSD protocol. | */
+   MAV_TUNNEL_PAYLOAD_TYPE_MODALAI_ESC_UART_PASSTHRU=211, /* Registered for ModalAI ESC UART passthru protocol. | */
+   MAV_TUNNEL_PAYLOAD_TYPE_MODALAI_IO_UART_PASSTHRU=212, /* Registered for ModalAI vendor use. | */
+   MAV_TUNNEL_PAYLOAD_TYPE_ENUM_END=213, /*  | */
 } MAV_TUNNEL_PAYLOAD_TYPE;
 #endif
 
@@ -2573,7 +2576,6 @@ typedef enum MAV_EVENT_CURRENT_SEQUENCE_FLAGS
 #define HAVE_ENUM_HIL_SENSOR_UPDATED_FLAGS
 typedef enum HIL_SENSOR_UPDATED_FLAGS
 {
-   HIL_SENSOR_UPDATED_NONE=0, /* None of the fields in HIL_SENSOR have been updated | */
    HIL_SENSOR_UPDATED_XACC=1, /* The value in the xacc field has been updated | */
    HIL_SENSOR_UPDATED_YACC=2, /* The value in the yacc field has been updated | */
    HIL_SENSOR_UPDATED_ZACC=4, /* The value in the zacc field has been updated | */
@@ -2597,7 +2599,6 @@ typedef enum HIL_SENSOR_UPDATED_FLAGS
 #define HAVE_ENUM_HIGHRES_IMU_UPDATED_FLAGS
 typedef enum HIGHRES_IMU_UPDATED_FLAGS
 {
-   HIGHRES_IMU_UPDATED_NONE=0, /* None of the fields in HIGHRES_IMU have been updated | */
    HIGHRES_IMU_UPDATED_XACC=1, /* The value in the xacc field has been updated | */
    HIGHRES_IMU_UPDATED_YACC=2, /* The value in the yacc field has been updated | */
    HIGHRES_IMU_UPDATED_ZACC=4, /* The value in the zacc field has been updated since | */
@@ -2611,8 +2612,7 @@ typedef enum HIGHRES_IMU_UPDATED_FLAGS
    HIGHRES_IMU_UPDATED_DIFF_PRESSURE=1024, /* The value in the diff_pressure field has been updated | */
    HIGHRES_IMU_UPDATED_PRESSURE_ALT=2048, /* The value in the pressure_alt field has been updated | */
    HIGHRES_IMU_UPDATED_TEMPERATURE=4096, /* The value in the temperature field has been updated | */
-   HIGHRES_IMU_UPDATED_ALL=65535, /* All fields in HIGHRES_IMU have been updated. | */
-   HIGHRES_IMU_UPDATED_FLAGS_ENUM_END=65536, /*  | */
+   HIGHRES_IMU_UPDATED_FLAGS_ENUM_END=4097, /*  | */
 } HIGHRES_IMU_UPDATED_FLAGS;
 #endif
 
@@ -2814,7 +2814,10 @@ typedef enum MAV_MODE_PROPERTY
    MAV_MODE_PROPERTY_NOT_USER_SELECTABLE=2, /* If set, this mode should not be added to the list of selectable modes.
           The mode might still be selected by the FC directly (for example as part of a failsafe).
          | */
-   MAV_MODE_PROPERTY_ENUM_END=3, /*  | */
+   MAV_MODE_PROPERTY_AUTO_MODE=4, /* If set, this mode is automatically controlled (it may use but does not require a manual controller).
+          If unset the mode is a assumed to require user input (be a manual mode).
+         | */
+   MAV_MODE_PROPERTY_ENUM_END=5, /*  | */
 } MAV_MODE_PROPERTY;
 #endif
 
