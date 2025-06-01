@@ -10,7 +10,7 @@
     #error Wrong include order: MAVLINK_MINIMAL.H MUST NOT BE DIRECTLY USED. Include mavlink.h from the same directory instead or set ALL AND EVERY defines from MAVLINK.H manually accordingly, including the #define MAVLINK_H call.
 #endif
 
-#define MAVLINK_MINIMAL_XML_HASH 7499980784693884506
+#define MAVLINK_MINIMAL_XML_HASH 7567541546791713914
 
 #ifdef __cplusplus
 extern "C" {
@@ -113,8 +113,10 @@ typedef enum MAV_TYPE
    MAV_TYPE_WINCH=42, /* Winch | */
    MAV_TYPE_GENERIC_MULTIROTOR=43, /* Generic multirotor that does not fit into a specific type or whose type is unknown | */
    MAV_TYPE_ILLUMINATOR=44, /* Illuminator. An illuminator is a light source that is used for lighting up dark areas external to the sytstem: e.g. a torch or searchlight (as opposed to a light source for illuminating the system itself, e.g. an indicator light). | */
-   MAV_TYPE_SATELLITE=45, /* Satellite. Used for satellite-like systems (orbiting satellites, space stations). For rockets (or landers) use MAV_TYPE_ROCKET. | */
-   MAV_TYPE_ENUM_END=46, /*  | */
+   MAV_TYPE_SPACECRAFT_ORBITER=45, /* Orbiter spacecraft. Includes satellites orbiting terrestrial and extra-terrestrial bodies. Follows NASA Spacecraft Classification. | */
+   MAV_TYPE_GROUND_QUADRUPED=46, /* A generic four-legged ground vehicle (e.g., a robot dog). | */
+   MAV_TYPE_VTOL_GYRODYNE=47, /* VTOL hybrid of helicopter and autogyro. It has a main rotor for lift and separate propellers for forward flight. The rotor must be powered for hover but can autorotate in cruise flight. See: https://en.wikipedia.org/wiki/Gyrodyne | */
+   MAV_TYPE_ENUM_END=48, /*  | */
 } MAV_TYPE;
 #endif
 
@@ -170,9 +172,18 @@ typedef enum MAV_STATE
 } MAV_STATE;
 #endif
 
-/** @brief Component ids (values) for the different types and instances of onboard hardware/software that might make up a MAVLink system (autopilot, cameras, servos, GPS systems, avoidance systems etc.).
-      Components must use the appropriate ID in their source address when sending messages. Components can also use IDs to determine if they are the intended recipient of an incoming message. The MAV_COMP_ID_ALL value is used to indicate messages that must be processed by all components.
-      When creating new entries, components that can have multiple instances (e.g. cameras, servos etc.) should be allocated sequential values. An appropriate number of values should be left free after these components to allow the number of instances to be expanded. */
+/** @brief Legacy component ID values for particular types of hardware/software that might make up a MAVLink system (autopilot, cameras, servos, avoidance systems etc.).
+      
+        Components are not required or expected to use IDs with names that correspond to their type or function, but may choose to do so.
+        Using an ID that matches the type may slightly reduce the chances of component id clashes, as, for historical reasons, it is less likely to be used by some other type of component.
+        System integration will still need to ensure that all components have unique IDs.
+
+        Component IDs are used for addressing messages to a particular component within a system.
+        A component can use any unique ID between 1 and 255 (MAV_COMP_ID_ALL value is the broadcast address, used to send to all components).
+        
+        Historically component ID were also used for identifying the type of component.
+        New code must not use component IDs to infer the component type, but instead check the MAV_TYPE in the HEARTBEAT message!
+       */
 #ifndef HAVE_ENUM_MAV_COMPONENT
 #define HAVE_ENUM_MAV_COMPONENT
 typedef enum MAV_COMPONENT
