@@ -83,40 +83,40 @@
       </entry>
     </enum>
     <enum name="MAV_MODE">
-      <description>These defines are predefined OR-combined mode flags. There is no need to use values from this enum, but it
-               simplifies the use of the mode flags. Note that manual input is enabled in all modes as a safety override.</description>
+      <deprecated since="2025-02" replaced_by="MAV_MODE_FLAG">Using MAV_MODE to set modes is less predictable than using standard modes (MAV_STANDARD_MODE) or custom modes (MAV_MODE_FLAG_CUSTOM_MODE_ENABLED).</deprecated>
+      <description>Predefined OR-combined MAV_MODE_FLAG values. These can simplify using the flags when setting modes. Note that manual input is enabled in all modes as a safety override.</description>
       <entry value="0" name="MAV_MODE_PREFLIGHT">
         <description>System is not ready to fly, booting, calibrating, etc. No flag is set.</description>
       </entry>
       <entry value="80" name="MAV_MODE_STABILIZE_DISARMED">
-        <description>System is allowed to be active, under assisted RC control.</description>
+        <description>System is allowed to be active, under assisted RC control (MAV_MODE_FLAG_SAFETY_ARMED, MAV_MODE_FLAG_STABILIZE_ENABLED)</description>
       </entry>
       <entry value="208" name="MAV_MODE_STABILIZE_ARMED">
-        <description>System is allowed to be active, under assisted RC control.</description>
+        <description>System is allowed to be active, under assisted RC control (MAV_MODE_FLAG_SAFETY_ARMED, MAV_MODE_FLAG_MANUAL_INPUT_ENABLED, MAV_MODE_FLAG_STABILIZE_ENABLED)</description>
       </entry>
       <entry value="64" name="MAV_MODE_MANUAL_DISARMED">
-        <description>System is allowed to be active, under manual (RC) control, no stabilization</description>
+        <description>System is allowed to be active, under manual (RC) control, no stabilization (MAV_MODE_FLAG_MANUAL_INPUT_ENABLED)</description>
       </entry>
       <entry value="192" name="MAV_MODE_MANUAL_ARMED">
-        <description>System is allowed to be active, under manual (RC) control, no stabilization</description>
+        <description>System is allowed to be active, under manual (RC) control, no stabilization (MAV_MODE_FLAG_SAFETY_ARMED, MAV_MODE_FLAG_MANUAL_INPUT_ENABLED)</description>
       </entry>
       <entry value="88" name="MAV_MODE_GUIDED_DISARMED">
-        <description>System is allowed to be active, under autonomous control, manual setpoint</description>
+        <description>System is allowed to be active, under autonomous control, manual setpoint (MAV_MODE_FLAG_SAFETY_ARMED, MAV_MODE_FLAG_STABILIZE_ENABLED, MAV_MODE_FLAG_GUIDED_ENABLED)</description>
       </entry>
       <entry value="216" name="MAV_MODE_GUIDED_ARMED">
-        <description>System is allowed to be active, under autonomous control, manual setpoint</description>
+        <description>System is allowed to be active, under autonomous control, manual setpoint (MAV_MODE_FLAG_SAFETY_ARMED, MAV_MODE_FLAG_MANUAL_INPUT_ENABLED, MAV_MODE_FLAG_STABILIZE_ENABLED, MAV_MODE_FLAG_GUIDED_ENABLED)</description>
       </entry>
       <entry value="92" name="MAV_MODE_AUTO_DISARMED">
-        <description>System is allowed to be active, under autonomous control and navigation (the trajectory is decided onboard and not pre-programmed by waypoints)</description>
+        <description>System is allowed to be active, under autonomous control and navigation (the trajectory is decided onboard and not pre-programmed by waypoints). (MAV_MODE_FLAG_SAFETY_ARMED, MAV_MODE_FLAG_STABILIZE_ENABLED, MAV_MODE_FLAG_GUIDED_ENABLED, MAV_MODE_FLAG_AUTO_ENABLED).</description>
       </entry>
       <entry value="220" name="MAV_MODE_AUTO_ARMED">
-        <description>System is allowed to be active, under autonomous control and navigation (the trajectory is decided onboard and not pre-programmed by waypoints)</description>
+        <description>System is allowed to be active, under autonomous control and navigation (the trajectory is decided onboard and not pre-programmed by waypoints). (MAV_MODE_FLAG_SAFETY_ARMED, MAV_MODE_FLAG_MANUAL_INPUT_ENABLED, MAV_MODE_FLAG_STABILIZE_ENABLED, MAV_MODE_FLAG_GUIDED_ENABLED,MAV_MODE_FLAG_AUTO_ENABLED).</description>
       </entry>
       <entry value="66" name="MAV_MODE_TEST_DISARMED">
-        <description>UNDEFINED mode. This solely depends on the autopilot - use with caution, intended for developers only.</description>
+        <description>UNDEFINED mode. This solely depends on the autopilot - use with caution, intended for developers only. (MAV_MODE_FLAG_MANUAL_INPUT_ENABLED, MAV_MODE_FLAG_TEST_ENABLED).</description>
       </entry>
       <entry value="194" name="MAV_MODE_TEST_ARMED">
-        <description>UNDEFINED mode. This solely depends on the autopilot - use with caution, intended for developers only.</description>
+        <description>UNDEFINED mode. This solely depends on the autopilot - use with caution, intended for developers only (MAV_MODE_FLAG_SAFETY_ARMED, MAV_MODE_FLAG_MANUAL_INPUT_ENABLED, MAV_MODE_FLAG_TEST_ENABLED)</description>
       </entry>
     </enum>
     <enum name="MAV_SYS_STATUS_SENSOR" bitmask="true">
@@ -1377,8 +1377,8 @@
       </entry>
       <entry value="176" name="MAV_CMD_DO_SET_MODE" hasLocation="false" isDestination="false">
         <description>Set system mode.</description>
-        <param index="1" label="Mode" enum="MAV_MODE">Mode</param>
-        <param index="2" label="Custom Mode">Custom mode - this is system specific, please refer to the individual autopilot specifications for details.</param>
+        <param index="1" label="Mode" enum="MAV_MODE_FLAG">Mode flags. MAV_MODE values can be used to set some mode flag combinations.</param>
+        <param index="2" label="Custom Mode">Custom system-specific mode (see target autopilot specifications for mode information). If MAV_MODE_FLAG_CUSTOM_MODE_ENABLED is set in param1 (mode) this mode is used: otherwise the field is ignored.</param>
         <param index="3" label="Custom Submode">Custom sub mode - this is system specific, please refer to the individual autopilot specifications for details.</param>
         <param index="4">Empty</param>
         <param index="5">Empty</param>
@@ -1573,7 +1573,7 @@
         <param index="1" label="Speed" units="m/s" minValue="-1">Ground speed, less than 0 (-1) for default</param>
         <param index="2" label="Bitmask" enum="MAV_DO_REPOSITION_FLAGS">Bitmask of option flags.</param>
         <param index="3" label="Radius" units="m">Loiter radius for planes. Positive values only, direction is controlled by Yaw value. A value of zero or NaN is ignored. </param>
-        <param index="4" label="Yaw" units="rad">Yaw heading. NaN to use the current system yaw heading mode (e.g. yaw towards next waypoint, yaw to home, etc.). For planes indicates loiter direction (0: clockwise, 1: counter clockwise)</param>
+        <param index="4" label="Yaw" units="rad">Yaw heading (heading reference defined in Bitmask field). NaN to use the current system yaw heading mode (e.g. yaw towards next waypoint, yaw to home, etc.). For planes indicates loiter direction (0: clockwise, 1: counter clockwise)</param>
         <param index="5" label="Latitude">Latitude</param>
         <param index="6" label="Longitude">Longitude</param>
         <param index="7" label="Altitude" units="m">Altitude</param>
@@ -1757,7 +1757,7 @@
       </entry>
       <entry value="211" name="MAV_CMD_DO_GRIPPER" hasLocation="false" isDestination="false">
         <description>Mission command to operate a gripper.</description>
-        <param index="1" label="Instance" minValue="1" increment="1">Gripper instance number.</param>
+        <param index="1" label="Gripper ID" minValue="1" increment="1">Gripper ID. 1-6 for an autopilot connected gripper. In missions this may be set to 1-6 for an autopilot gripper, or the gripper component id for a MAVLink gripper. 0 targets all grippers.</param>
         <param index="2" label="Action" enum="GRIPPER_ACTIONS">Gripper action to perform.</param>
         <param index="3">Empty</param>
         <param index="4">Empty</param>
@@ -2404,7 +2404,7 @@
       </entry>
       <entry value="5002" name="MAV_CMD_NAV_FENCE_POLYGON_VERTEX_EXCLUSION" hasLocation="true" isDestination="false">
         <description>Fence vertex for an exclusion polygon (the polygon must not be self-intersecting). The vehicle must stay outside this area. Minimum of 3 vertices required.
-          The vertices for a polygon must be sent sequentially, each with param1 set to the total number of vertices in the polygon.                
+          The vertices for a polygon must be sent sequentially, each with param1 set to the total number of vertices in the polygon.
         </description>
         <param index="1" label="Vertex Count" minValue="3" increment="1">Polygon vertex count. This is the number of vertices in the current polygon (all vertices will have the same number).</param>
         <param index="2">Reserved</param>
@@ -3242,6 +3242,10 @@
         <wip/>
         <description>Component supports locking control to a particular GCS independent of its system (via MAV_CMD_REQUEST_OPERATOR_CONTROL).</description>
       </entry>
+      <entry value="1048576" name="MAV_PROTOCOL_CAPABILITY_GRIPPER">
+        <wip/>
+        <description>Autopilot has a connected gripper. MAVLink Grippers would set MAV_TYPE_GRIPPER instead.</description>
+      </entry>
     </enum>
     <enum name="MAV_MISSION_TYPE">
       <description>Type of mission items being requested/sent in mission protocol.</description>
@@ -3562,6 +3566,9 @@
       <description>Bitmap of options for the MAV_CMD_DO_REPOSITION</description>
       <entry value="1" name="MAV_DO_REPOSITION_FLAGS_CHANGE_MODE">
         <description>The aircraft should immediately transition into guided. This should not be set for follow me applications</description>
+      </entry>
+      <entry value="2" name="MAV_DO_REPOSITION_FLAGS_RELATIVE_YAW">
+        <description>Yaw relative to the vehicle current heading (if not set, relative to North).</description>
       </entry>
     </enum>
     <enum name="SPEED_TYPE">
@@ -6115,8 +6122,8 @@
       <description>Sent from autopilot to simulation. Hardware in the loop control outputs. Alternative to HIL_CONTROLS.</description>
       <field type="uint64_t" name="time_usec" units="us">Timestamp (UNIX Epoch time or time since system boot). The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude of the number.</field>
       <field type="float[16]" name="controls">Control outputs -1 .. 1. Channel assignment depends on the simulated hardware.</field>
-      <field type="uint8_t" name="mode" enum="MAV_MODE_FLAG" display="bitmask">System mode. Includes arming state.</field>
-      <field type="uint64_t" name="flags" enum="HIL_ACTUATOR_CONTROLS_FLAGS" display="bitmask">Flags bitmask.</field>
+      <field type="uint8_t" name="mode" enum="MAV_MODE_FLAG">System mode. Includes arming state.</field>
+      <field type="uint64_t" name="flags" enum="HIL_ACTUATOR_CONTROLS_FLAGS">Flags bitmask.</field>
     </message>
     <message id="100" name="OPTICAL_FLOW">
       <description>Optical flow from a flow sensor (e.g. optical mouse sensor)</description>
@@ -7065,7 +7072,7 @@
       <field type="uint32_t" name="time_boot_ms" units="ms">Timestamp (time since system boot).</field>
       <field type="uint8_t[32]" name="vendor_name">Name of the camera vendor</field>
       <field type="uint8_t[32]" name="model_name">Name of the camera model</field>
-      <field type="uint32_t" name="firmware_version" invalid="0">Version of the camera firmware, encoded as: (Dev &amp; 0xff) &lt;&lt; 24 | (Patch &amp; 0xff) &lt;&lt; 16 | (Minor &amp; 0xff) &lt;&lt; 8 | (Major &amp; 0xff). Use 0 if not known.</field>
+      <field type="uint32_t" name="firmware_version" invalid="0">Version of the camera firmware, encoded as: `(Dev &amp; 0xff) &lt;&lt; 24 \| (Patch &amp; 0xff) &lt;&lt; 16 \| (Minor &amp; 0xff) &lt;&lt; 8 \| (Major &amp; 0xff)`. Use 0 if not known.</field>
       <field type="float" name="focal_length" units="mm" invalid="NaN">Focal length. Use NaN if not known.</field>
       <field type="float" name="sensor_size_h" units="mm" invalid="NaN">Image sensor size horizontal. Use NaN if not known.</field>
       <field type="float" name="sensor_size_v" units="mm" invalid="NaN">Image sensor size vertical. Use NaN if not known.</field>
