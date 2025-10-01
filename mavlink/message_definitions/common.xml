@@ -594,11 +594,14 @@
     <!-- gripper action enum -->
     <enum name="GRIPPER_ACTIONS">
       <description>Gripper actions.</description>
-      <entry value="0" name="GRIPPER_ACTION_RELEASE">
-        <description>Gripper release cargo.</description>
+      <entry value="0" name="GRIPPER_ACTION_OPEN">
+        <description>Gripper commence open. Often used to release cargo.</description>
       </entry>
-      <entry value="1" name="GRIPPER_ACTION_GRAB">
-        <description>Gripper grab onto cargo.</description>
+      <entry value="1" name="GRIPPER_ACTION_CLOSE">
+        <description>Gripper commence close. Often used to grab onto cargo.</description>
+      </entry>
+      <entry value="2" name="GRIPPER_ACTION_STOP">
+        <description>Gripper stop (maintain current grip position).</description>
       </entry>
     </enum>
     <!-- winch action enum -->
@@ -1755,7 +1758,7 @@
       </entry>
       <entry value="211" name="MAV_CMD_DO_GRIPPER" hasLocation="false" isDestination="false">
         <description>Mission command to operate a gripper.</description>
-        <param index="1" label="Gripper ID" minValue="1" increment="1">Gripper ID. 1-6 for an autopilot connected gripper. In missions this may be set to 1-6 for an autopilot gripper, or the gripper component id for a MAVLink gripper. 0 targets all grippers.</param>
+        <param index="1" label="Gripper ID" minValue="0" increment="1">Gripper ID. 1-6 for an autopilot connected gripper. In missions this may be set to 1-6 for an autopilot gripper, or the gripper component id for a MAVLink gripper. 0 targets all grippers.</param>
         <param index="2" label="Action" enum="GRIPPER_ACTIONS">Gripper action to perform.</param>
         <param index="3">Empty</param>
         <param index="4">Empty</param>
@@ -2786,6 +2789,29 @@
         <description>64-bit floating-point</description>
       </entry>
     </enum>
+    <enum name="MAV_PARAM_ERROR">
+      <wip/>
+      <!-- This enum is work-in-progress and it can therefore change. It should NOT be used in stable production environments. -->
+      <description>Parameter protocol error types (see PARAM_ERROR).</description>
+      <entry value="0" name="MAV_PARAM_ERROR_NO_ERROR">
+        <description>No error occurred (not expected in PARAM_ERROR but may be used in future implementations.</description>
+      </entry>
+      <entry value="1" name="MAV_PARAM_ERROR_DOES_NOT_EXIST">
+        <description>Parameter does not exist</description>
+      </entry>
+      <entry value="2" name="MAV_PARAM_ERROR_VALUE_OUT_OF_RANGE">
+        <description>Parameter value does not fit within accepted range</description>
+      </entry>
+      <entry value="3" name="MAV_PARAM_ERROR_PERMISSION_DENIED">
+        <description>Caller is not permitted to set the value of this parameter</description>
+      </entry>
+      <entry value="4" name="MAV_PARAM_ERROR_COMPONENT_NOT_FOUND">
+        <description>Unknown component specified</description>
+      </entry>
+      <entry value="5" name="MAV_PARAM_ERROR_READ_ONLY">
+        <description>Parameter is read-only</description>
+      </entry>
+    </enum>
     <enum name="MAV_PARAM_EXT_TYPE">
       <description>Specifies the datatype of a MAVLink extended parameter.</description>
       <entry value="1" name="MAV_PARAM_EXT_TYPE_UINT8">
@@ -2853,6 +2879,10 @@
       </entry>
       <entry value="9" name="MAV_RESULT_COMMAND_UNSUPPORTED_MAV_FRAME">
         <description>Command is invalid because a frame is required and the specified frame is not supported.</description>
+      </entry>
+      <entry value="10" name="MAV_RESULT_NOT_IN_CONTROL">
+        <wip/>
+        <description>Command has been rejected because source system is not in control of the target system/component.</description>
       </entry>
     </enum>
     <enum name="MAV_MISSION_RESULT">
@@ -4844,7 +4874,7 @@
         <description>The requested event is not available (anymore).</description>
       </entry>
     </enum>
-    <enum name="MAV_EVENT_CURRENT_SEQUENCE_FLAGS">
+    <enum name="MAV_EVENT_CURRENT_SEQUENCE_FLAGS" bitmask="true">
       <description>Flags for CURRENT_EVENT_SEQUENCE.</description>
       <entry value="1" name="MAV_EVENT_CURRENT_SEQUENCE_FLAGS_RESET">
         <description>A sequence reset has happened (e.g. vehicle reboot).</description>
@@ -5203,6 +5233,21 @@
         <description>Simulation is using lockstep</description>
       </entry>
     </enum>
+    <enum name="COMPUTER_STATUS_FLAGS" bitmask="true">
+      <description>Flags used to report computer status.</description>
+      <entry value="1" name="COMPUTER_STATUS_FLAGS_UNDER_VOLTAGE">
+        <description>Indicates if the system is experiencing voltage outside of acceptable range.</description>
+      </entry>
+      <entry value="2" name="COMPUTER_STATUS_FLAGS_CPU_THROTTLE">
+        <description>Indicates if CPU throttling is active.</description>
+      </entry>
+      <entry value="4" name="COMPUTER_STATUS_FLAGS_THERMAL_THROTTLE">
+        <description>Indicates if thermal throttling is active.</description>
+      </entry>
+      <entry value="8" name="COMPUTER_STATUS_FLAGS_DISK_FULL">
+        <description>Indicates if main disk is full.</description>
+      </entry>
+    </enum>
   </enums>
   <messages>
     <message id="1" name="SYS_STATUS">
@@ -5423,19 +5468,6 @@
       <field type="float" name="vx" units="m/s">X Speed</field>
       <field type="float" name="vy" units="m/s">Y Speed</field>
       <field type="float" name="vz" units="m/s">Z Speed</field>
-    </message>
-    <message id="33" name="GLOBAL_POSITION_INT">
-      <description>The filtered global position (e.g. fused GPS and accelerometers). The position is in GPS-frame (right-handed, Z-up). It
-               is designed as scaled integer message since the resolution of float is not sufficient.</description>
-      <field type="uint32_t" name="time_boot_ms" units="ms">Timestamp (time since system boot).</field>
-      <field type="int32_t" name="lat" units="degE7">Latitude, expressed</field>
-      <field type="int32_t" name="lon" units="degE7">Longitude, expressed</field>
-      <field type="int32_t" name="alt" units="mm">Altitude (MSL). Note that virtually all GPS modules provide both WGS84 and MSL.</field>
-      <field type="int32_t" name="relative_alt" units="mm">Altitude above home</field>
-      <field type="int16_t" name="vx" units="cm/s">Ground X Speed (Latitude, positive north)</field>
-      <field type="int16_t" name="vy" units="cm/s">Ground Y Speed (Longitude, positive east)</field>
-      <field type="int16_t" name="vz" units="cm/s">Ground Z Speed (Altitude, positive down)</field>
-      <field type="uint16_t" name="hdg" units="cdeg" invalid="UINT16_MAX">Vehicle heading (yaw angle), 0.0..359.99 degrees. If unknown, set to: UINT16_MAX</field>
     </message>
     <message id="34" name="RC_CHANNELS_SCALED">
       <description>The scaled values of the RC channels received: (-100%) -10000, (0%) 0, (100%) 10000. Channels that are inactive should be set to INT16_MAX.</description>
@@ -5763,7 +5795,8 @@
       <field type="uint8_t" name="on_off">1 stream is enabled, 0 stream is stopped.</field>
     </message>
     <message id="69" name="MANUAL_CONTROL">
-      <description>This message provides an API for manually controlling the vehicle using standard joystick axes nomenclature, along with a joystick-like input device. Unused axes can be disabled and buttons states are transmitted as individual on/off bits of a bitmask</description>
+      <description>Manual (joystick) control message.
+        This message represents movement axes and button using standard joystick axes nomenclature. Unused axes can be disabled and buttons states are transmitted as individual on/off bits of a bitmask. For more information see https://mavlink.io/en/manual_control.html</description>
       <field type="uint8_t" name="target">The system to be controlled.</field>
       <field type="int16_t" name="x" invalid="INT16_MAX">X-axis, normalized to the range [-1000,1000]. A value of INT16_MAX indicates that this axis is invalid. Generally corresponds to forward(1000)-backward(-1000) movement on a joystick and the pitch of a vehicle.</field>
       <field type="int16_t" name="y" invalid="INT16_MAX">Y-axis, normalized to the range [-1000,1000]. A value of INT16_MAX indicates that this axis is invalid. Generally corresponds to left(-1000)-right(1000) movement on a joystick and the roll of a vehicle.</field>
@@ -6987,7 +7020,7 @@
       <field type="uint32_t" name="time_boot_ms" units="ms">Timestamp (time since system boot).</field>
       <field type="uint8_t[32]" name="vendor_name">Name of the camera vendor</field>
       <field type="uint8_t[32]" name="model_name">Name of the camera model</field>
-      <field type="uint32_t" name="firmware_version" invalid="0">Version of the camera firmware, encoded as: `(Dev &amp; 0xff) &lt;&lt; 24 \| (Patch &amp; 0xff) &lt;&lt; 16 \| (Minor &amp; 0xff) &lt;&lt; 8 \| (Major &amp; 0xff)`. Use 0 if not known.</field>
+      <field type="uint32_t" name="firmware_version" invalid="0">Version of the camera firmware, encoded as: `(Dev &amp; 0xff) &lt;&lt; 24 + (Patch &amp; 0xff) &lt;&lt; 16 + (Minor &amp; 0xff) &lt;&lt; 8 + (Major &amp; 0xff)`. Use 0 if not known.</field>
       <field type="float" name="focal_length" units="mm" invalid="NaN">Focal length. Use NaN if not known.</field>
       <field type="float" name="sensor_size_h" units="mm" invalid="NaN">Image sensor size horizontal. Use NaN if not known.</field>
       <field type="float" name="sensor_size_v" units="mm" invalid="NaN">Image sensor size vertical. Use NaN if not known.</field>
@@ -7239,8 +7272,8 @@
       <field type="char[32]" name="vendor_name">Name of the gimbal vendor.</field>
       <field type="char[32]" name="model_name">Name of the gimbal model.</field>
       <field type="char[32]" name="custom_name">Custom name of the gimbal given to it by the user.</field>
-      <field type="uint32_t" name="firmware_version">Version of the gimbal firmware, encoded as: `(Dev &amp; 0xff) &lt;&lt; 24 \| (Patch &amp; 0xff) &lt;&lt; 16 \| (Minor &amp; 0xff) &lt;&lt; 8 \| (Major &amp; 0xff)`.</field>
-      <field type="uint32_t" name="hardware_version">Version of the gimbal hardware, encoded as: `(Dev &amp; 0xff) &lt;&lt; 24 \| (Patch &amp; 0xff) &lt;&lt; 16 \| (Minor &amp; 0xff) &lt;&lt; 8 \| (Major &amp; 0xff)`.</field>
+      <field type="uint32_t" name="firmware_version">Version of the gimbal firmware, encoded as: `(Dev &amp; 0xff) &lt;&lt; 24 + (Patch &amp; 0xff) &lt;&lt; 16 + (Minor &amp; 0xff) &lt;&lt; 8 + (Major &amp; 0xff)`.</field>
+      <field type="uint32_t" name="hardware_version">Version of the gimbal hardware, encoded as: `(Dev &amp; 0xff) &lt;&lt; 24 + (Patch &amp; 0xff) &lt;&lt; 16 + (Minor &amp; 0xff) &lt;&lt; 8 + (Major &amp; 0xff)`.</field>
       <field type="uint64_t" name="uid" invalid="0">UID of gimbal hardware (0 if unknown).</field>
       <field type="uint16_t" name="cap_flags" enum="GIMBAL_DEVICE_CAP_FLAGS">Bitmap of gimbal capability flags.</field>
       <field type="uint16_t" name="custom_cap_flags">Bitmap for use for gimbal-specific capability flags.</field>
@@ -7578,6 +7611,17 @@
       <field type="uint8_t" name="flight_state" enum="UTM_FLIGHT_STATE">Flight state</field>
       <field type="uint8_t" name="flags" enum="UTM_DATA_AVAIL_FLAGS">Bitwise OR combination of the data available flags.</field>
     </message>
+    <message id="345" name="PARAM_ERROR">
+      <wip/>
+      <!-- This enum is work-in-progress and it can therefore change. It should NOT be used in stable production environments. -->
+      <description>Parameter set/get error. Returned from a MAVLink node in response to an error in the parameter protocol, for example failing to set a parameter because it does not exist.
+      </description>
+      <field type="uint8_t" name="target_system">System ID</field>
+      <field type="uint8_t" name="target_component">Component ID</field>
+      <field type="char[16]" name="param_id">Parameter id. Terminated by NULL if the length is less than 16 human-readable chars and WITHOUT null termination (NULL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string</field>
+      <field type="int16_t" name="param_index">Parameter index. Will be -1 if the param ID field should be used as an identifier (else the param id will be ignored)</field>
+      <field type="uint8_t" name="error" enum="MAV_PARAM_ERROR">Error being returned to client.</field>
+    </message>
     <message id="350" name="DEBUG_FLOAT_ARRAY">
       <description>Large debug/prototyping array. The message uses the maximum available payload for data. The array_id and name fields are used to discriminate between messages in code and in user interfaces (respectively). Do not use in production code.</description>
       <field type="uint64_t" name="time_usec" units="us">Timestamp (UNIX Epoch time or time since system boot). The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude of the number.</field>
@@ -7717,8 +7761,6 @@
       <field type="uint8_t[8]" name="data">Frame data</field>
     </message>
     <message id="390" name="ONBOARD_COMPUTER_STATUS">
-      <wip/>
-      <!-- This message is work-in-progress it can therefore change, and should NOT be used in stable production environments -->
       <description>Hardware status sent by an onboard computer.</description>
       <field type="uint64_t" name="time_usec" units="us">Timestamp (UNIX Epoch time or time since system boot). The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude of the number.</field>
       <field type="uint32_t" name="uptime" units="ms">Time since system boot.</field>
@@ -7740,6 +7782,8 @@
       <field type="uint32_t[6]" name="link_rx_rate" units="KiB/s" invalid="[UINT32_MAX]">Network traffic to the component system. A value of UINT32_MAX implies the field is unused.</field>
       <field type="uint32_t[6]" name="link_tx_max" units="KiB/s" invalid="[UINT32_MAX]">Network capacity from the component system. A value of UINT32_MAX implies the field is unused.</field>
       <field type="uint32_t[6]" name="link_rx_max" units="KiB/s" invalid="[UINT32_MAX]">Network capacity to the component system. A value of UINT32_MAX implies the field is unused.</field>
+      <extensions/>
+      <field type="uint16_t" name="status_flags" enum="COMPUTER_STATUS_FLAGS">Bitmap of status flags.</field>
     </message>
     <message id="395" name="COMPONENT_INFORMATION">
       <deprecated since="2022-04" replaced_by="COMPONENT_METADATA"/>
