@@ -10,7 +10,7 @@
     #error Wrong include order: MAVLINK_DEVELOPMENT.H MUST NOT BE DIRECTLY USED. Include mavlink.h from the same directory instead or set ALL AND EVERY defines from MAVLINK.H manually accordingly, including the #define MAVLINK_H call.
 #endif
 
-#define MAVLINK_DEVELOPMENT_XML_HASH 7553690174607290793
+#define MAVLINK_DEVELOPMENT_XML_HASH -3913983436356870158
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,17 +32,6 @@ extern "C" {
 
 // ENUM DEFINITIONS
 
-
-/** @brief Airspeed sensor flags */
-#ifndef HAVE_ENUM_AIRSPEED_SENSOR_FLAGS
-#define HAVE_ENUM_AIRSPEED_SENSOR_FLAGS
-typedef enum AIRSPEED_SENSOR_FLAGS
-{
-   AIRSPEED_SENSOR_UNHEALTHY=1, /* Airspeed sensor is unhealthy | */
-   AIRSPEED_SENSOR_USING=2, /* True if the data from this sensor is being actively used by the flight controller for guidance, navigation or control. | */
-   AIRSPEED_SENSOR_FLAGS_ENUM_END=3, /*  | */
-} AIRSPEED_SENSOR_FLAGS;
-#endif
 
 /** @brief Battery status flags for fault, health and state indication. */
 #ifndef HAVE_ENUM_MAV_BATTERY_STATUS_FLAGS
@@ -97,6 +86,7 @@ typedef enum MAV_BATTERY_STATUS_FLAGS
          | */
    MAV_BATTERY_STATUS_FLAGS_FAULT_OVER_TEMPERATURE=2048, /* Over-temperature fault. | */
    MAV_BATTERY_STATUS_FLAGS_FAULT_UNDER_TEMPERATURE=4096, /* Under-temperature fault. | */
+   MAV_CMD_NAV_FENCE_HOME_CIRCLE_INCLUSION=5005, /* Circular fence area centered on home. The vehicle must stay inside this area. If home is moved, the fence moves. |Radius.| Vehicle must be inside ALL inclusion zones in a single group, vehicle must be inside at least one group. Ignored when sent as a command.|  */
    MAV_BATTERY_STATUS_FLAGS_FAULT_OVER_CURRENT=8192, /* Over-current fault. | */
    MAV_BATTERY_STATUS_FLAGS_FAULT_SHORT_CIRCUIT=16384, /* 
           Short circuit event detected.
@@ -148,6 +138,10 @@ typedef enum MAV_CMD
         INT32_MAX or NaN: Use current vehicle position, or current center if already loitering.| Center point longitude/Y coordinate according to MAV_FRAME. If no MAV_FRAME specified, MAV_FRAME_GLOBAL is assumed.
         INT32_MAX or NaN: Use current vehicle position, or current center if already loitering.| Center point altitude MSL/Z coordinate according to MAV_FRAME. If no MAV_FRAME specified, MAV_FRAME_GLOBAL is assumed.
         INT32_MAX or NaN: Use current vehicle altitude.|  */
+   MAV_CMD_NAV_ARC_WAYPOINT=36, /* Circular arc path waypoint.
+          This defines the end/exit point and angle (param1) of an arc path from the previous waypoint. A position is required before this command to define the start of the arc (e.g. current position, a MAV_CMD_NAV_WAYPOINT, or a MAV_CMD_NAV_ARC_WAYPOINT).
+          The resulting path is a circular arc in the NE frame, with the difference in height being defined by the difference in waypoint altitudes.
+           |The angle in degrees from the starting position to the exit position of the arc in the NE frame. Positive values are CW arcs and negative values are CCW arcs.| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)| Latitude| Longitude| Altitude|  */
    MAV_CMD_NAV_ROI=80, /* Sets the region of interest (ROI) for a sensor set or the vehicle itself. This can then be used by the vehicle's control system to control the vehicle attitude and the attitude of various sensors such as cameras. |Region of interest mode.| Waypoint index/ target ID. (see MAV_ROI enum)| ROI index (allows a vehicle to manage multiple ROI's)| Empty| x the location of the fixed ROI (see MAV_FRAME)| y| z|  */
    MAV_CMD_NAV_PATHPLANNING=81, /* Control autonomous path planning on the MAV. |0: Disable local obstacle avoidance / local path planning (without resetting map), 1: Enable local path planning, 2: Enable and reset local path planning| 0: Disable full path planning (without resetting map), 1: Enable, 2: Enable and reset map/occupancy grid, 3: Enable and reset planned route, but not occupancy grid| Empty| Yaw angle at goal| Latitude/X of goal| Longitude/Y of goal| Altitude/Z of goal|  */
    MAV_CMD_NAV_SPLINE_WAYPOINT=82, /* Navigate to waypoint using a spline path. |Hold time. (ignored by fixed wing, time to stay at waypoint for rotary wing)| Empty| Empty| Empty| Latitude/X of goal| Longitude/Y of goal| Altitude/Z of goal|  */
@@ -641,7 +635,6 @@ typedef enum GLOBAL_POSITION_FLAGS
 #endif
 
 // MESSAGE DEFINITIONS
-#include "./mavlink_msg_airspeed.h"
 #include "./mavlink_msg_global_position.h"
 #include "./mavlink_msg_set_velocity_limits.h"
 #include "./mavlink_msg_velocity_limits.h"
