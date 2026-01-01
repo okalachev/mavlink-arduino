@@ -1,12 +1,12 @@
 /** @file
- *  @brief MAVLink comm protocol built from test.xml
+ *  @brief MAVLink comm protocol built from stemstudios.xml
  *  @see http://mavlink.org
  */
 #pragma once
 #ifndef MAVLINK_H
 #define MAVLINK_H
 
-#define MAVLINK_PRIMARY_XML_HASH -8356885933196468376
+#define MAVLINK_PRIMARY_XML_HASH 1929554615529502463
 
 #ifndef MAVLINK_STX
 #define MAVLINK_STX 253
@@ -29,6 +29,6 @@
 #endif
 
 #include "version.h"
-#include "test.h"
+#include "stemstudios.h"
 
 #endif // MAVLINK_H

@@ -1,5 +1,5 @@
 /** @file
- *  @brief MAVLink comm protocol built from uAvionix.xml
+ *  @brief MAVLink comm protocol built from stemstudios.xml
  *  @see http://mavlink.org
  */
 #pragma once
