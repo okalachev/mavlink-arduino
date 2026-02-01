@@ -1454,7 +1454,7 @@
         <param index="7">Empty</param>
       </entry>
       <entry value="181" name="MAV_CMD_DO_SET_RELAY" hasLocation="false" isDestination="false">
-        <description>Set a relay to a condition.</description>
+        <description>Set a relay to a condition. The current value may optionally be reported using RELAY_STATUS.</description>
         <param index="1" label="Instance" minValue="0" increment="1">Relay instance number.</param>
         <param index="2" label="Setting" minValue="0" increment="1">Setting. (1=on, 0=off, others possible depending on system hardware)</param>
         <param index="3">Empty</param>
@@ -1853,7 +1853,7 @@
         <param index="1" label="Start Engine" enum="MAV_BOOL">Start engine (MAV_BOOL_False: Stop engine). Values not equal to 0 or 1 are invalid.</param>
         <param index="2" label="Cold Start" enum="MAV_BOOL">Cold start engine (MAV_BOOL_FALSE: Warm start). Values not equal to 0 or 1 are invalid. Controls use of choke where applicable</param>
         <param index="3" label="Height Delay" units="m" minValue="0">Height delay. This is for commanding engine start only after the vehicle has gained the specified height. Used in VTOL vehicles during takeoff to start engine after the aircraft is off the ground. Zero for no delay.</param>
-        <param index="4">Empty</param>
+        <param index="4" label="Options" enum="ENGINE_CONTROL_OPTIONS">A bitmask of options for engine control</param>
         <param index="5">Empty</param>
         <param index="6">Empty</param>
         <param index="7">Empty</param>
@@ -4033,6 +4033,12 @@
         <description>Spektrum DSMX8</description>
       </entry>
     </enum>
+    <enum name="ENGINE_CONTROL_OPTIONS" bitmask="true">
+      <description>Engine control options</description>
+      <entry value="1" name="ENGINE_CONTROL_OPTIONS_ALLOW_START_WHILE_DISARMED">
+        <description>Allow starting the engine while disarmed (without changing the vehicle's armed state). This effectively arms just the ICE, without arming the vehicle to start other motors or propellers.</description>
+      </entry>
+    </enum>
     <enum name="POSITION_TARGET_TYPEMASK" bitmask="true">
       <description>Bitmap to indicate which dimensions should be ignored by the vehicle: a value of 0b0000000000000000 or 0b0000001000000000 indicates that none of the setpoint dimensions should be ignored. If bit 9 is set the floats afx afy afz should be interpreted as force instead of acceleration.</description>
       <entry value="1" name="POSITION_TARGET_TYPEMASK_X_IGNORE">
@@ -5823,14 +5829,14 @@
       <description>Request a data stream.</description>
       <field type="uint8_t" name="target_system">The target requested to send the message stream.</field>
       <field type="uint8_t" name="target_component">The target requested to send the message stream.</field>
-      <field type="uint8_t" name="req_stream_id">The ID of the requested data stream</field>
+      <field type="uint8_t" name="req_stream_id" enum="MAV_DATA_STREAM">The ID of the requested data stream.</field>
       <field type="uint16_t" name="req_message_rate" units="Hz">The requested message rate</field>
       <field type="uint8_t" name="start_stop">1 to start sending, 0 to stop sending.</field>
     </message>
     <message id="67" name="DATA_STREAM">
       <superseded since="2015-08" replaced_by="MESSAGE_INTERVAL"/>
       <description>Data stream status information.</description>
-      <field type="uint8_t" name="stream_id">The ID of the requested data stream</field>
+      <field type="uint8_t" name="stream_id" enum="MAV_DATA_STREAM">The ID of the requested data stream.</field>
       <field type="uint16_t" name="message_rate" units="Hz">The message rate</field>
       <field type="uint8_t" name="on_off">1 stream is enabled, 0 stream is stopped.</field>
     </message>
@@ -7300,7 +7306,7 @@
       <field type="uint8_t" name="target_system">System ID</field>
       <field type="uint8_t" name="target_component">Component ID</field>
       <field type="uint32_t" name="flags" enum="GIMBAL_MANAGER_FLAGS">High level gimbal manager flags to use.</field>
-      <field type="uint8_t" name="gimbal_device_id" instance="true">Component ID of gimbal device to address (or 1-6 for non-MAVLink gimbal), 0 for all gimbal device components. Send command multiple times for more than one gimbal (but not all gimbals).</field>
+      <field type="uint8_t" name="gimbal_device_id">Component ID of gimbal device to address (or 1-6 for non-MAVLink gimbal), 0 for all gimbal device components. Send command multiple times for more than one gimbal (but not all gimbals).</field>
       <field type="float[4]" name="q">Quaternion components, w, x, y, z (1 0 0 0 is the null-rotation, the frame is depends on whether the flag GIMBAL_MANAGER_FLAGS_YAW_LOCK is set)</field>
       <field type="float" name="angular_velocity_x" units="rad/s" invalid="NaN">X component of angular velocity, positive is rolling to the right, NaN to be ignored.</field>
       <field type="float" name="angular_velocity_y" units="rad/s" invalid="NaN">Y component of angular velocity, positive is pitching up, NaN to be ignored.</field>
@@ -7399,7 +7405,7 @@
       <field type="uint8_t" name="target_system">System ID</field>
       <field type="uint8_t" name="target_component">Component ID</field>
       <field type="uint32_t" name="flags" enum="GIMBAL_MANAGER_FLAGS">High level gimbal manager flags to use.</field>
-      <field type="uint8_t" name="gimbal_device_id" instance="true">Component ID of gimbal device to address (or 1-6 for non-MAVLink gimbal), 0 for all gimbal device components. Send command multiple times for more than one gimbal (but not all gimbals).</field>
+      <field type="uint8_t" name="gimbal_device_id">Component ID of gimbal device to address (or 1-6 for non-MAVLink gimbal), 0 for all gimbal device components. Send command multiple times for more than one gimbal (but not all gimbals).</field>
       <field type="float" name="pitch" units="rad" invalid="NaN">Pitch angle (positive: up, negative: down, NaN to be ignored).</field>
       <field type="float" name="yaw" units="rad" invalid="NaN">Yaw angle (positive: to the right, negative: to the left, NaN to be ignored).</field>
       <field type="float" name="pitch_rate" units="rad/s" invalid="NaN">Pitch angular rate (positive: up, negative: down, NaN to be ignored).</field>
@@ -7410,7 +7416,7 @@
       <field type="uint8_t" name="target_system">System ID</field>
       <field type="uint8_t" name="target_component">Component ID</field>
       <field type="uint32_t" name="flags" enum="GIMBAL_MANAGER_FLAGS">High level gimbal manager flags.</field>
-      <field type="uint8_t" name="gimbal_device_id" instance="true">Component ID of gimbal device to address (or 1-6 for non-MAVLink gimbal), 0 for all gimbal device components. Send command multiple times for more than one gimbal (but not all gimbals).</field>
+      <field type="uint8_t" name="gimbal_device_id">Component ID of gimbal device to address (or 1-6 for non-MAVLink gimbal), 0 for all gimbal device components. Send command multiple times for more than one gimbal (but not all gimbals).</field>
       <field type="float" name="pitch" invalid="NaN">Pitch angle unitless (-1..1, positive: up, negative: down, NaN to be ignored).</field>
       <field type="float" name="yaw" invalid="NaN">Yaw angle unitless (-1..1, positive: to the right, negative: to the left, NaN to be ignored).</field>
       <field type="float" name="pitch_rate" invalid="NaN">Pitch angular rate unitless (-1..1, positive: up, negative: down, NaN to be ignored).</field>
@@ -7802,6 +7808,15 @@
       <field type="uint64_t" name="time_usec" units="us">Timestamp (since system boot).</field>
       <field type="uint32_t" name="active">Active outputs</field>
       <field type="float[32]" name="actuator">Servo / motor output array values. Zero values indicate unused channels.</field>
+    </message>
+    <message id="376" name="RELAY_STATUS">
+      <description>Reports the on/off state of relays, as controlled by MAV_CMD_DO_SET_RELAY.
+        Message streaming should be requested using MAV_CMD_SET_MESSAGE_INTERVAL.
+        Note that it should not be sent on every relay state change to avoid flooding the link.
+      </description>
+      <field type="uint32_t" name="time_boot_ms" units="ms">Timestamp (time since system boot).</field>
+      <field type="uint16_t" name="on">Relay states. Relay instance numbers are represented as individual bits in this mask by offset.</field>
+      <field type="uint16_t" name="present">Relay present. Relay instance numbers are represented as individual bits in this mask by offset.  Bits will be true if a relay instance is configured.</field>
     </message>
     <message id="380" name="TIME_ESTIMATE_TO_TARGET">
       <wip/>
