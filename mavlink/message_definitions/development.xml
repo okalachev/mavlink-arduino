@@ -225,6 +225,18 @@
         <param index="6">Empty</param>
         <param index="7">Empty</param>
       </entry>
+      <entry value="43006" name="MAV_CMD_ESTIMATOR_SENSOR_ENABLE" hasLocation="false" isDestination="false">
+        <description>Enable or disable a specific estimator sensor fusion source at runtime.
+          This allows a GCS or companion computer to dynamically control which sensors the estimator fuses without changing parameters.
+        </description>
+        <param index="1" label="Source" enum="ESTIMATOR_SENSOR_FUSION_SOURCE" minValue="0" increment="1">Sensor fusion source type.</param>
+        <param index="2" label="Instance" minValue="0" increment="1">Sensor instance (0-based, for multi-instance).</param>
+        <param index="3" label="Enable" enum="MAV_BOOL">Enable (1) or Disable (0) the source.</param>
+        <param index="4" label="Estimator Instance" default="NaN" minValue="0" increment="1">Estimator instance (0-based, for systems with multiple estimators).</param>
+        <param index="5">Empty</param>
+        <param index="6">Empty</param>
+        <param index="7">Empty</param>
+      </entry>
       <entry value="620" name="MAV_CMD_EXTERNAL_ATTITUDE_ESTIMATE" hasLocation="false" isDestination="false">
         <description>Set an external estimate of vehicle attitude.
           This might be used to provide an initial attitude (especially heading) estimate to the estimator (EKF). Angles are defined in a 3-2-1 (yaw-pitch-roll) intrinsic Tait-Bryan sequence.
@@ -435,6 +447,51 @@
         <description>BLHeli32 ESC firmware.</description>
       </entry>
     </enum>
+    <enum name="RANGING_BEACON_ALT_TYPE">
+      <description>Altitude reference for RANGING_BEACON alt field.</description>
+      <entry value="0" name="RANGING_BEACON_ALT_TYPE_WGS84">
+        <description>Altitude above WGS84 ellipsoid.</description>
+      </entry>
+      <entry value="1" name="RANGING_BEACON_ALT_TYPE_MSL">
+        <description>Altitude above Mean Sea Level (AMSL).</description>
+      </entry>
+    </enum>
+    <enum name="RANGING_BEACON_STATUS_FLAG" bitmask="true">
+      <description>Status flags for a RANGING_BEACON.</description>
+      <entry value="1" name="RANGING_BEACON_STATUS_FLAG_STATION_SIGNAL_POOR">
+        <description>Station signal is poor. This might indicate channel fading, interference, or other signal quality issues.</description>
+      </entry>
+    </enum>
+    <enum name="ESTIMATOR_SENSOR_FUSION_SOURCE">
+      <description>Estimator sensor fusion source types. Used in MAV_CMD_ESTIMATOR_SENSOR_ENABLE and as array index in ESTIMATOR_SENSOR_FUSION_STATUS.</description>
+      <entry value="0" name="ESTIMATOR_SENSOR_FUSION_SOURCE_GPS">
+        <description>GNSS</description>
+      </entry>
+      <entry value="1" name="ESTIMATOR_SENSOR_FUSION_SOURCE_OF">
+        <description>Optical Flow</description>
+      </entry>
+      <entry value="2" name="ESTIMATOR_SENSOR_FUSION_SOURCE_EV">
+        <description>External Vision</description>
+      </entry>
+      <entry value="3" name="ESTIMATOR_SENSOR_FUSION_SOURCE_AGP">
+        <description>Auxiliary Global Position</description>
+      </entry>
+      <entry value="4" name="ESTIMATOR_SENSOR_FUSION_SOURCE_BARO">
+        <description>Barometer</description>
+      </entry>
+      <entry value="5" name="ESTIMATOR_SENSOR_FUSION_SOURCE_RNG">
+        <description>Range Finder</description>
+      </entry>
+      <entry value="6" name="ESTIMATOR_SENSOR_FUSION_SOURCE_MAG">
+        <description>Magnetometer</description>
+      </entry>
+      <entry value="7" name="ESTIMATOR_SENSOR_FUSION_SOURCE_ASPD">
+        <description>Airspeed</description>
+      </entry>
+      <entry value="8" name="ESTIMATOR_SENSOR_FUSION_SOURCE_RANGING_BEACON">
+        <description>Ranging Beacon</description>
+      </entry>
+    </enum>
   </enums>
   <messages>
     <message id="354" name="SET_VELOCITY_LIMITS">
@@ -512,6 +569,24 @@
         Channel values are in centered 13 bit format. Range is -4096 to 4096, center is 0. Conversion to PWM is x * 5/32 + 1500.
         Channels with indexes equal or above count should be set to 0, to benefit from MAVLink's trailing-zero trimming.</field>
     </message>
+    <message id="421" name="RC_CHANNELS_OVERRIDE_V2">
+      <wip since="2026-03"/>
+      <!-- This message is work-in-progress and it can therefore change. It should NOT be used in stable production environments. -->
+      <description>
+        Highly bandwidth-efficient RC override message for professional networked operations (LTE, Zigbee, GCP). 
+        Supersedes RC_CHANNELS_OVERRIDE by adding 32-channel support and a bitmask for multi-master conflict avoidance. 
+        Uses centered-at-zero values and extension-field placement to maximize MAVLink 2 trailing-zero truncation.
+      </description>
+      <field type="uint8_t" name="target_system">System ID.</field>
+      <field type="uint8_t" name="target_component">Component ID.</field>
+      <field type="uint32_t" name="active_mask">Bitmap of included channels (bit 0 = CH1). 1: Valid/Override, 0: Ignore.</field>
+      <extensions/>
+      <field type="int16_t[32]" name="channels" minValue="-4096" maxValue="4096">
+        RC channels in centered 13-bit format. Range: -4096 to 4096, Center: 0. 
+        Conversion to PWM: (x * 5/32) + 1500. 
+        Unused channels must be set to 0 to enable MAVLink 2 trailing-zero trimming.
+      </field>
+    </message>
     <message id="441" name="GNSS_INTEGRITY">
       <description>Information about key components of GNSS receivers, like signal authentication, interference and system errors.</description>
       <field type="uint8_t" name="id" instance="true">GNSS receiver id. Must match instance ids of other messages from same receiver.</field>
@@ -585,6 +660,34 @@
       <field type="uint32_t[6]" name="write_mask">Bitmask indicating which bytes in the data array should be written. Each bit corresponds to a byte index in the data array (bit 0 of write_mask[0] = data[0], bit 31 of write_mask[0] = data[31], bit 0 of write_mask[1] = data[32], etc.). Set bits indicate bytes to write, cleared bits indicate bytes to skip. This allows precise updates of individual parameters without overwriting the entire EEPROM.</field>
       <field type="uint8_t" name="length" maxValue="222">Number of valid bytes in data array.</field>
       <field type="uint8_t[192]" name="data">Raw ESC EEPROM data. Unused bytes should be set to zero.</field>
+    </message>
+    <message id="513" name="RANGING_BEACON">
+      <wip/>
+      <!-- This message is work-in-progress and it can therefore change. It should NOT be used in stable production environments. -->
+      <description>Range information from a radio beacon for trilateration-based positioning.
+        This message is telemetry intended for consumption by an autopilot (MAVLink does not define the mechanism used to determine the range).
+      </description>
+      <field type="uint64_t" name="time_usec" units="us">Timestamp (UNIX Epoch time or time since system boot). The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude of the number.</field>
+      <field type="uint8_t" name="target_system">System ID.</field>
+      <field type="uint8_t" name="target_component">Component ID.</field>
+      <field type="uint16_t" name="beacon_id" instance="true">ID of the ranging beacon/station.</field>
+      <field type="uint32_t" name="range" units="mm" invalid="UINT32_MAX">Range measurement between a beacon and a vehicle.</field>
+      <field type="int32_t" name="lat" units="degE7" invalid="INT32_MAX">Beacon latitude (WGS84).</field>
+      <field type="int32_t" name="lon" units="degE7" invalid="INT32_MAX">Beacon longitude (WGS84).</field>
+      <field type="float" name="alt" units="m" invalid="NaN">Beacon altitude (frame defined in alt_type).</field>
+      <field type="uint8_t" name="alt_type" enum="RANGING_BEACON_ALT_TYPE">Altitude frame for alt field. RANGING_BEACON_ALT_TYPE_WGS84 (0) preferred.</field>
+      <field type="uint32_t" name="hacc_est" units="mm" invalid="UINT32_MAX">Beacon 1-sigma horizontal accuracy estimate.</field>
+      <field type="uint32_t" name="vacc_est" units="mm" invalid="UINT32_MAX">Beacon 1-sigma vertical accuracy estimate.</field>
+      <field type="uint16_t" name="carrier_freq" units="MHz" invalid="UINT16_MIN">Ranging carrier frequency</field>
+      <field type="uint32_t" name="range_accuracy" units="mm" invalid="UINT32_MAX">Estimated 1-sigma range measurement accuracy.</field>
+      <field type="uint8_t" name="sequence">Measurement sequence number.</field>
+      <field type="uint8_t" name="status" enum="RANGING_BEACON_STATUS_FLAG">Ranging beacon status.</field>
+    </message>
+    <message id="514" name="ESTIMATOR_SENSOR_FUSION_STATUS">
+      <description>Status of estimator sensor fusion sources. Each array is indexed by ESTIMATOR_SENSOR_FUSION_SOURCE - 1. Each element is a per-instance bitmask (bit 0 = instance 0, etc.). For single-instance sources only bit 0 is used. For multi-instance sources like AGP, multiple bits may be set.</description>
+      <field type="uint8_t[9]" name="intended">Per-source instance bitmask of sensors the estimator intends to fuse (reflects CTRL params with runtime overrides via MAV_CMD_ESTIMATOR_SENSOR_ENABLE).</field>
+      <field type="uint8_t[9]" name="active">Per-source instance bitmask of sensors the estimator is actively fusing.</field>
+      <field type="float[9]" name="test_ratio" invalid="[NaN]">Per-source normalized innovation test ratio. NaN if not available.</field>
     </message>
   </messages>
 </mavlink>
