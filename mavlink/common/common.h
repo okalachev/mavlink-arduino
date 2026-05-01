@@ -10,7 +10,7 @@
     #error Wrong include order: MAVLINK_COMMON.H MUST NOT BE DIRECTLY USED. Include mavlink.h from the same directory instead or set ALL AND EVERY defines from MAVLINK.H manually accordingly, including the #define MAVLINK_H call.
 #endif
 
-#define MAVLINK_COMMON_XML_HASH -8559197774432701676
+#define MAVLINK_COMMON_XML_HASH 4773069725854512734
 
 #ifdef __cplusplus
 extern "C" {
@@ -769,6 +769,10 @@ typedef enum MAV_CMD
         INT32_MAX or NaN: Use current vehicle position, or current center if already loitering.| Center point longitude/Y coordinate according to MAV_FRAME. If no MAV_FRAME specified, MAV_FRAME_GLOBAL is assumed.
         INT32_MAX or NaN: Use current vehicle position, or current center if already loitering.| Center point altitude MSL/Z coordinate according to MAV_FRAME. If no MAV_FRAME specified, MAV_FRAME_GLOBAL is assumed.
         INT32_MAX or NaN: Use current vehicle altitude.|  */
+   MAV_CMD_NAV_ARC_WAYPOINT=36, /* Circular arc path waypoint.
+          This defines the end/exit point and angle (param1) of an arc path from the previous waypoint. A position is required before this command to define the start of the arc (e.g. current position, a MAV_CMD_NAV_WAYPOINT, or a MAV_CMD_NAV_ARC_WAYPOINT).
+          The resulting path is a circular arc in the NE frame, with the difference in height being defined by the difference in waypoint altitudes.
+         |The angle in degrees from the starting position to the exit position of the arc in the NE frame. Positive values are CW arcs and negative values are CCW arcs.| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)| Latitude| Longitude| Altitude|  */
    MAV_CMD_NAV_ROI=80, /* Sets the region of interest (ROI) for a sensor set or the vehicle itself. This can then be used by the vehicle's control system to control the vehicle attitude and the attitude of various sensors such as cameras. |Region of interest mode.| Waypoint index/ target ID. (see MAV_ROI enum)| ROI index (allows a vehicle to manage multiple ROI's)| Empty| x the location of the fixed ROI (see MAV_FRAME)| y| z|  */
    MAV_CMD_NAV_PATHPLANNING=81, /* Control autonomous path planning on the MAV. |0: Disable local obstacle avoidance / local path planning (without resetting map), 1: Enable local path planning, 2: Enable and reset local path planning| 0: Disable full path planning (without resetting map), 1: Enable, 2: Enable and reset map/occupancy grid, 3: Enable and reset planned route, but not occupancy grid| Empty| Yaw angle at goal| Latitude/X of goal| Longitude/Y of goal| Altitude/Z of goal|  */
    MAV_CMD_NAV_SPLINE_WAYPOINT=82, /* Navigate to waypoint using a spline path. |Hold time. (ignored by fixed wing, time to stay at waypoint for rotary wing)| Empty| Empty| Empty| Latitude/X of goal| Longitude/Y of goal| Altitude/Z of goal|  */
@@ -1019,7 +1023,7 @@ typedef enum MAV_CMD
    MAV_CMD_USER_3=31012, /* User defined command. Ground Station will not show the Vehicle as flying through this item. Example: MAV_CMD_DO_SET_PARAMETER item. |User defined| User defined| User defined| User defined| User defined| User defined| User defined|  */
    MAV_CMD_USER_4=31013, /* User defined command. Ground Station will not show the Vehicle as flying through this item. Example: MAV_CMD_DO_SET_PARAMETER item. |User defined| User defined| User defined| User defined| User defined| User defined| User defined|  */
    MAV_CMD_USER_5=31014, /* User defined command. Ground Station will not show the Vehicle as flying through this item. Example: MAV_CMD_DO_SET_PARAMETER item. |User defined| User defined| User defined| User defined| User defined| User defined| User defined|  */
-   MAV_CMD_CAN_FORWARD=32000, /* Request forwarding of CAN packets from the given CAN bus to this component. CAN Frames are sent using CAN_FRAME and CANFD_FRAME messages |Bus number (0 to disable forwarding, 1 for first bus, 2 for 2nd bus, 3 for 3rd bus).| Empty.| Empty.| Empty.| Empty.| Empty.| Empty.|  */
+   MAV_CMD_CAN_FORWARD=32000, /* Request forwarding of CAN packets from the given CAN bus to this component via this MAVLink channel. CAN Frames are sent using CAN_FRAME and CANFD_FRAME messages |Bus number (0 to disable forwarding, 1 for first bus, 2 for 2nd bus, 3 for 3rd bus).| Empty.| Empty.| Empty.| Empty.| Empty.| Empty.|  */
    MAV_CMD_FIXED_MAG_CAL_YAW=42006, /* Magnetometer calibration based on provided known yaw. This allows for fast calibration using WMM field tables in the vehicle, given only the known yaw of the vehicle. If Latitude and longitude are both zero then use the current vehicle location. |Yaw of vehicle in earth frame.| CompassMask, 0 for all.| Latitude.| Longitude.| Empty.| Empty.| Empty.|  */
    MAV_CMD_DO_WINCH=42600, /* Command to operate winch. |Winch instance number.| Action to perform.| Length of line to release (negative to wind).| Release rate (negative to wind).| Empty.| Empty.| Empty.|  */
    MAV_CMD_EXTERNAL_POSITION_ESTIMATE=43003, /* Provide an external position estimate for use when dead-reckoning. This is meant to be used for occasional position resets that may be provided by a external system such as a remote pilot using landmarks over a video link. |Timestamp that this message was sent as a time in the transmitters time domain. The sender should wrap this time back to zero based on required timing accuracy for the application and the limitations of a 32 bit float. For example, wrapping at 10 hours would give approximately 1ms accuracy. Recipient must handle time wrap in any timing jitter correction applied to this field. Wrap rollover time should not be at not more than 250 seconds, which would give approximately 10 microsecond accuracy.| The time spent in processing the sensor data that is the basis for this position. The recipient can use this to improve time alignment of the data. Set to zero if not known.| estimated one standard deviation accuracy of the measurement. Set to NaN if not known.| Empty| Latitude| Longitude| Altitude, not used. Should be sent as NaN. May be supported in a future version of this message.|  */
@@ -2488,19 +2492,19 @@ typedef enum AIS_NAV_STATUS
 #define HAVE_ENUM_AIS_FLAGS
 typedef enum AIS_FLAGS
 {
-   AIS_FLAGS_POSITION_ACCURACY=1, /* 1 = Position accuracy less than 10m, 0 = position accuracy greater than 10m. | */
-   AIS_FLAGS_VALID_COG=2, /*  | */
-   AIS_FLAGS_VALID_VELOCITY=4, /*  | */
+   AIS_FLAGS_POSITION_ACCURACY=1, /* 1 = High (Position accuracy less than or equal to 10m), 0 = Low (position accuracy greater than 10m). | */
+   AIS_FLAGS_VALID_COG=2, /* The COG field contains valid data | */
+   AIS_FLAGS_VALID_VELOCITY=4, /* The velocity field contains valid data | */
    AIS_FLAGS_HIGH_VELOCITY=8, /* 1 = Velocity over 52.5765m/s (102.2 knots) | */
-   AIS_FLAGS_VALID_TURN_RATE=16, /*  | */
-   AIS_FLAGS_TURN_RATE_SIGN_ONLY=32, /* Only the sign of the returned turn rate value is valid, either greater than 5deg/30s or less than -5deg/30s | */
+   AIS_FLAGS_VALID_TURN_RATE=16, /* The turn_rate field contains valid data | */
+   AIS_FLAGS_TURN_RATE_SIGN_ONLY=32, /* Only the sign of the returned turn_rate value is valid. The actual turn rate is either greater than 5deg/30s or less than -5deg/30s. | */
    AIS_FLAGS_VALID_DIMENSIONS=64, /*  | */
-   AIS_FLAGS_LARGE_BOW_DIMENSION=128, /* Distance to bow is larger than 511m | */
-   AIS_FLAGS_LARGE_STERN_DIMENSION=256, /* Distance to stern is larger than 511m | */
-   AIS_FLAGS_LARGE_PORT_DIMENSION=512, /* Distance to port side is larger than 63m | */
-   AIS_FLAGS_LARGE_STARBOARD_DIMENSION=1024, /* Distance to starboard side is larger than 63m | */
-   AIS_FLAGS_VALID_CALLSIGN=2048, /*  | */
-   AIS_FLAGS_VALID_NAME=4096, /*  | */
+   AIS_FLAGS_LARGE_BOW_DIMENSION=128, /* Distance to bow is greater than or equal to 511m | */
+   AIS_FLAGS_LARGE_STERN_DIMENSION=256, /* Distance to stern is greater than or equal to 511m | */
+   AIS_FLAGS_LARGE_PORT_DIMENSION=512, /* Distance to port side is greater than or equal to 63m | */
+   AIS_FLAGS_LARGE_STARBOARD_DIMENSION=1024, /* Distance to starboard side is greater than or equal to 63m | */
+   AIS_FLAGS_VALID_CALLSIGN=2048, /* The callsign field contains valid data | */
+   AIS_FLAGS_VALID_NAME=4096, /* The name field contains valid data | */
    AIS_FLAGS_ENUM_END=4097, /*  | */
 } AIS_FLAGS;
 #endif
@@ -2552,10 +2556,8 @@ typedef enum FAILURE_TYPE
 typedef enum NAV_VTOL_LAND_OPTIONS
 {
    NAV_VTOL_LAND_OPTIONS_DEFAULT=0, /* Default autopilot landing behaviour. | */
-   NAV_VTOL_LAND_OPTIONS_FW_DESCENT=1, /* Descend in fixed wing mode, transitioning to multicopter mode for vertical landing when close to the ground.
-          The fixed wing descent pattern is at the discretion of the vehicle (e.g. transition altitude, loiter direction, radius, and speed, etc.).
-         | */
-   NAV_VTOL_LAND_OPTIONS_HOVER_DESCENT=2, /* Land in multicopter mode on reaching the landing coordinates (the whole landing is by "hover descent"). | */
+   NAV_VTOL_LAND_OPTIONS_FW_SPIRAL_APPROACH=1, /* Use a fixed wing spiral desent approach before landing. | */
+   NAV_VTOL_LAND_OPTIONS_FW_APPROACH=2, /* Use a fixed wing approach before detransitioning and landing vertically. | */
    NAV_VTOL_LAND_OPTIONS_ENUM_END=3, /*  | */
 } NAV_VTOL_LAND_OPTIONS;
 #endif
