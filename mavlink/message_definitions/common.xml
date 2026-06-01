@@ -398,6 +398,9 @@
       <entry value="6" name="MAV_MOUNT_MODE_HOME_LOCATION">
         <description>Gimbal tracks home position</description>
       </entry>
+      <entry value="7" name="MAV_MOUNT_MODE_WPNEXT_OFFSET">
+        <description>Gimbal tracks next waypoint location with offset</description>
+      </entry>
     </enum>
     <enum name="GIMBAL_DEVICE_CAP_FLAGS" bitmask="true">
       <description>Gimbal device (low level) capability flags (bitmap).</description>
@@ -1153,7 +1156,7 @@
         <param index="1" label="Turns" minValue="0">Number of turns.</param>
         <param index="2" label="Heading Required" enum="MAV_BOOL">Leave loiter circle only when track heads towards the next waypoint (MAV_BOOL_FALSE: Leave when turns complete). Values not equal to 0 or 1 are invalid.</param>
         <param index="3" label="Radius" units="m">Loiter radius around waypoint for forward-only moving vehicles (not multicopters). If positive loiter clockwise, else counter-clockwise</param>
-        <param index="4" label="Xtrack Location">Loiter circle exit location and/or path to next waypoint ("xtrack") for forward-only moving vehicles (not multicopters). 0 for the vehicle to converge towards the center xtrack when it leaves the loiter (the line between the centers of the current and next waypoint), 1 to converge to the direct line between the location that the vehicle exits the loiter radius and the next waypoint. Otherwise the angle (in degrees) between the tangent of the loiter circle and the center xtrack at which the vehicle must leave the loiter (and converge to the center xtrack). NaN to use the current system default xtrack behaviour.</param>
+        <param index="4" label="Xtrack Location">Loiter circle exit location and/or path to next waypoint ("xtrack") for forward-only moving vehicles (not multicopters). 0 for the vehicle to converge towards the center xtrack when it leaves the loiter (the line between the centers of the current and next waypoint), 1 to converge to the direct line between the location that the vehicle exits the loiter radius and the next waypoint. NaN to use the current system default xtrack behaviour.</param>
         <param index="5" label="Latitude">Latitude</param>
         <param index="6" label="Longitude">Longitude</param>
         <param index="7" label="Altitude" units="m">Altitude</param>
@@ -1163,7 +1166,7 @@
         <param index="1" label="Time" units="s" minValue="0">Loiter time (only starts once Lat, Lon and Alt is reached).</param>
         <param index="2" label="Heading Required" enum="MAV_BOOL">Leave loiter circle only when track heading towards the next waypoint (MAV_BOOL_FALSE: Leave on time expiry). Values not equal to 0 or 1 are invalid.</param>
         <param index="3" label="Radius" units="m">Loiter radius around waypoint for forward-only moving vehicles (not multicopters). If positive loiter clockwise, else counter-clockwise.</param>
-        <param index="4" label="Xtrack Location">Loiter circle exit location and/or path to next waypoint ("xtrack") for forward-only moving vehicles (not multicopters). 0 for the vehicle to converge towards the center xtrack when it leaves the loiter (the line between the centers of the current and next waypoint), 1 to converge to the direct line between the location that the vehicle exits the loiter radius and the next waypoint. Otherwise the angle (in degrees) between the tangent of the loiter circle and the center xtrack at which the vehicle must leave the loiter (and converge to the center xtrack). NaN to use the current system default xtrack behaviour.</param>
+        <param index="4" label="Xtrack Location">Loiter circle exit location and/or path to next waypoint ("xtrack") for forward-only moving vehicles (not multicopters). 0 for the vehicle to converge towards the center xtrack when it leaves the loiter (the line between the centers of the current and next waypoint), 1 to converge to the direct line between the location that the vehicle exits the loiter radius and the next waypoint. NaN to use the current system default xtrack behaviour.</param>
         <param index="5" label="Latitude">Latitude</param>
         <param index="6" label="Longitude">Longitude</param>
         <param index="7" label="Altitude" units="m">Altitude</param>
@@ -1243,7 +1246,7 @@
         <param index="1" label="Heading Required" enum="MAV_BOOL">Leave loiter circle only when track heading towards the next waypoint (MAV_BOOL_FALSE: Leave when altitude reached). Values not equal to 0 or 1 are invalid.</param>
         <param index="2" label="Radius" units="m">Loiter radius around waypoint for forward-only moving vehicles (not multicopters). If positive loiter clockwise, negative counter-clockwise, 0 means no change to standard loiter.</param>
         <param index="3">Empty</param>
-        <param index="4" label="Xtrack Location" minValue="0" maxValue="1" increment="1">Loiter circle exit location and/or path to next waypoint ("xtrack") for forward-only moving vehicles (not multicopters). 0 for the vehicle to converge towards the center xtrack when it leaves the loiter (the line between the centers of the current and next waypoint), 1 to converge to the direct line between the location that the vehicle exits the loiter radius and the next waypoint. Otherwise the angle (in degrees) between the tangent of the loiter circle and the center xtrack at which the vehicle must leave the loiter (and converge to the center xtrack). NaN to use the current system default xtrack behaviour.</param>
+        <param index="4" label="Xtrack Location" minValue="0" maxValue="1" increment="1">Loiter circle exit location and/or path to next waypoint ("xtrack") for forward-only moving vehicles (not multicopters). 0 for the vehicle to converge towards the center xtrack when it leaves the loiter (the line between the centers of the current and next waypoint), 1 to converge to the direct line between the location that the vehicle exits the loiter radius and the next waypoint. NaN to use the current system default xtrack behaviour.</param>
         <param index="5" label="Latitude">Latitude</param>
         <param index="6" label="Longitude">Longitude</param>
         <param index="7" label="Altitude" units="m">Altitude</param>
@@ -1583,8 +1586,12 @@
         <param index="2" label="Actuator 2" minValue="-1" maxValue="1">Actuator 2 value, scaled from [-1 to 1]. NaN to ignore.</param>
         <param index="3" label="Actuator 3" minValue="-1" maxValue="1">Actuator 3 value, scaled from [-1 to 1]. NaN to ignore.</param>
         <param index="4" label="Actuator 4" minValue="-1" maxValue="1">Actuator 4 value, scaled from [-1 to 1]. NaN to ignore.</param>
-        <param index="5" label="Actuator 5" minValue="-1" maxValue="1">Actuator 5 value, scaled from [-1 to 1]. NaN to ignore.</param>
-        <param index="6" label="Actuator 6" minValue="-1" maxValue="1">Actuator 6 value, scaled from [-1 to 1]. NaN to ignore.</param>
+        <param index="5" label="Actuator 5">Actuator 5 value.
+          If sent in COMMAND_LONG: value is scaled from [-1 to 1]. NaN to ignore.
+          If sent in COMMAND_INT or MISSION_ITEM_INT: value is scaled by 1e7. INT32_MAX to ignore.</param>
+        <param index="6" label="Actuator 6">Actuator 6 value.
+          If sent in COMMAND_LONG: value is scaled from [-1 to 1]. NaN to ignore.
+          If sent in COMMAND_INT or MISSION_ITEM_INT: value is scaled by 1e7. INT32_MAX to ignore.</param>
         <param index="7" label="Index" minValue="0" increment="1">Index of actuator set (i.e if set to 1, Actuator 1 becomes Actuator 7)</param>
       </entry>
       <entry value="188" name="MAV_CMD_DO_RETURN_PATH_START" hasLocation="true" isDestination="false">
@@ -2529,6 +2536,7 @@
       <!-- Values in the range [5200, 5210) should be reserved for UAVCAN.  -->
       <!-- BEGIN UAVCAN range -->
       <entry value="5200" name="MAV_CMD_UAVCAN_GET_NODE_INFO" hasLocation="false" isDestination="false">
+        <superseded since="2026-05" replaced_by="MAV_CMD_REQUEST_MESSAGE"/>
         <description>Commands the vehicle to respond with a sequence of messages UAVCAN_NODE_INFO, one message per every UAVCAN node that is online. Note that some of the response messages can be lost, which the receiver can detect easily by checking whether every received UAVCAN_NODE_STATUS has a matching message UAVCAN_NODE_INFO received earlier; if not, this command should be sent again in order to request re-transmission of the node information messages.</description>
         <param index="1">Reserved (set to 0)</param>
         <param index="2">Reserved (set to 0)</param>
@@ -2605,7 +2613,12 @@
         <param index="6">Empty.</param>
         <param index="7">Empty.</param>
       </entry>
-      <!-- from ardupilotmega.xml (hence ID is in that range) -->
+      <entry value="43002" name="MAV_CMD_GUIDED_CHANGE_HEADING" hasLocation="false" isDestination="false">
+        <description>Change to target direction at a given rate, overriding previous heading/s. This slews the vehicle at a controllable rate between its previous heading and the new one.</description>
+        <param index="1" label="Heading Type" enum="HEADING_TYPE">Course-over-ground or raw vehicle heading.</param>
+        <param index="2" label="Heading Target" units="deg" minValue="0" maxValue="359.99">Target heading.</param>
+        <param index="3" label="Heading Rate of Change" units="deg/s">Maximum centripetal acceleration, i.e. rate of change toward new heading.</param>
+      </entry>
       <entry value="43003" name="MAV_CMD_EXTERNAL_POSITION_ESTIMATE" hasLocation="true" isDestination="false">
         <description>Provide an external position estimate for use when dead-reckoning. This is meant to be used for occasional position resets that may be provided by a external system such as a remote pilot using landmarks over a video link.</description>
         <param index="1" label="transmission_time" units="s">Timestamp that this message was sent as a time in the transmitters time domain. The sender should wrap this time back to zero based on required timing accuracy for the application and the limitations of a 32 bit float. For example, wrapping at 10 hours would give approximately 1ms accuracy. Recipient must handle time wrap in any timing jitter correction applied to this field. Wrap rollover time should not be at not more than 250 seconds, which would give approximately 10 microsecond accuracy.</param>
@@ -3623,6 +3636,18 @@
         <description>Descent speed</description>
       </entry>
     </enum>
+    <enum name="HEADING_TYPE">
+      <description>Heading setpoint types used in MAV_CMD_GUIDED_CHANGE_HEADING</description>
+      <entry value="0" name="HEADING_TYPE_COURSE_OVER_GROUND">
+        <description>Course over ground.</description>
+      </entry>
+      <entry value="1" name="HEADING_TYPE_HEADING">
+        <description>Raw vehicle heading.</description>
+      </entry>
+      <entry value="2" name="HEADING_TYPE_DEFAULT">
+        <description>Default heading.</description>
+      </entry>
+    </enum>
     <!-- ESTIMATOR_STATUS_FLAGS - these values should be bit-and with the messages flags field to know if flag has been set -->
     <enum name="ESTIMATOR_STATUS_FLAGS" bitmask="true">
       <description>Flags in ESTIMATOR_STATUS message</description>
@@ -3907,6 +3932,9 @@
       </entry>
       <entry value="3" name="VIDEO_STREAM_TYPE_MPEG_TS">
         <description>Stream is MPEG TS (URI gives the port number)</description>
+      </entry>
+      <entry value="4" name="VIDEO_STREAM_TYPE_WHEP">
+        <description>Stream is WHEP (WebRTC-HTTP Egress Protocol)</description>
       </entry>
     </enum>
     <enum name="VIDEO_STREAM_ENCODING">
@@ -5161,6 +5189,9 @@
       <entry value="15" name="MAV_FTP_OPCODE_BURSTREADFILE">
         <description>BurstReadFile: Burst download session file</description>
       </entry>
+      <entry value="16" name="MAV_FTP_OPCODE_LISTDIRECTORYWITHTIME">
+        <description>ListDirectoryWithTime: List files and directories, along with last-modification timestamps, in path from offset. This is the same as ListDirectory except for the addition of timestamps. Servers that do not support this opcode respond with a NAK (MAV_FTP_ERR_UNKNOWNCOMMAND).</description>
+      </entry>
       <entry value="128" name="MAV_FTP_OPCODE_ACK">
         <description>ACK: ACK response</description>
       </entry>
@@ -5382,6 +5413,9 @@
       <entry value="6" name="GLOBAL_POSITION_SRC_ESTIMATOR">
         <description>Estimated position based on various sensors (eg. a Kalman Filter).</description>
       </entry>
+      <entry value="7" name="GLOBAL_POSITION_SRC_LEO">
+        <description>Low Earth Orbit satellite-based positioning (e.g.: Starlink, Xona PULSAR).</description>
+      </entry>
     </enum>
     <enum name="GLOBAL_POSITION_FLAGS" bitmask="true">
       <description>Status flags for GLOBAL_POSITION</description>
@@ -5466,9 +5500,9 @@
     </message>
     <message id="11" name="SET_MODE">
       <superseded since="2015-12" replaced_by="MAV_CMD_DO_SET_MODE">Use COMMAND_LONG with MAV_CMD_DO_SET_MODE instead</superseded>
-      <description>Set the system mode, as defined by enum MAV_MODE. There is no target component id as the mode is by definition for the overall aircraft, not only for one component.</description>
+      <description>Set the system mode, as defined by enum MAV_MODE_FLAG. There is no target component id as the mode is by definition for the overall aircraft, not only for one component.</description>
       <field type="uint8_t" name="target_system">The system setting the mode</field>
-      <field type="uint8_t" name="base_mode" enum="MAV_MODE">The new base mode.</field>
+      <field type="uint8_t" name="base_mode" enum="MAV_MODE_FLAG">The new base mode.</field>
       <field type="uint32_t" name="custom_mode">The new autopilot-specific mode. This field can be ignored by an autopilot.</field>
     </message>
     <!-- IDs 15-17 reserved for PARAM_VALUE_UNION and other param messages -->
@@ -7003,13 +7037,13 @@
     </message>
     <message id="242" name="HOME_POSITION">
       <description>
-	Contains the home position.
-	The home position is the default position that the system will return to and land on.
-	The position must be set automatically by the system during the takeoff, and may also be explicitly set using MAV_CMD_DO_SET_HOME.
-	The global and local positions encode the position in the respective coordinate frames, while the q parameter encodes the orientation of the surface.
-	Under normal conditions it describes the heading and terrain slope, which can be used by the aircraft to adjust the approach.
-	The approach 3D vector describes the point to which the system should fly in normal flight mode and then perform a landing sequence along the vector.
-        Note: this message can be requested by sending the MAV_CMD_REQUEST_MESSAGE with param1=242 (or the deprecated MAV_CMD_GET_HOME_POSITION command).
+        Contains the home position.
+        The home position is the default position that the system will return to and land on.
+        The position must be set automatically by the system during the takeoff, and may also be explicitly set using MAV_CMD_DO_SET_HOME.
+        The global and local positions encode the position in the respective coordinate frames, while the q parameter encodes the orientation of the surface.
+        Under normal conditions it describes the heading and terrain slope, which can be used by the aircraft to adjust the approach.
+        The approach 3D vector describes the point to which the system should fly in normal flight mode and then perform a landing sequence along the vector.
+        Note: this message can be requested by sending the MAV_CMD_REQUEST_MESSAGE with param1=242.
       </description>
       <field type="int32_t" name="latitude" units="degE7">Latitude (WGS84)</field>
       <field type="int32_t" name="longitude" units="degE7">Longitude (WGS84)</field>
@@ -7057,8 +7091,7 @@
       <description>
         The interval between messages for a particular MAVLink message ID.
         This message is sent in response to the MAV_CMD_REQUEST_MESSAGE command with param1=244 (this message) and param2=message_id (the id of the message for which the interval is required).
-	It may also be sent in response to MAV_CMD_GET_MESSAGE_INTERVAL.
-	This interface replaces DATA_STREAM.</description>
+        This interface replaces DATA_STREAM.</description>
       <field type="uint16_t" name="message_id">The ID of the requested MAVLink message. v1.0 is limited to 254 messages.</field>
       <field type="int32_t" name="interval_us" units="us">The interval between two messages. A value of -1 indicates this stream is disabled, 0 indicates it is not available, &gt; 0 indicates the interval at which it is sent.</field>
     </message>
@@ -7503,7 +7536,7 @@
       <field type="uint16_t" name="estimator_status" enum="ESTIMATOR_STATUS_FLAGS">Bitmap indicating which estimator outputs are valid.</field>
       <field type="uint8_t" name="landed_state" enum="MAV_LANDED_STATE" invalid="MAV_LANDED_STATE_UNDEFINED">The landed state. Is set to MAV_LANDED_STATE_UNDEFINED if landed state is unknown.</field>
       <extensions/>
-      <field type="float" name="angular_velocity_z" units="rad/s" invalid="NaN">Z component of angular velocity in NED (North, East, Down). NaN if unknown.</field>
+      <field type="float" name="angular_velocity_z" units="rad/s" invalid="0">Z component of angular velocity in NED (North, East, Down). 0 if unknown. Use 0.00001 to represent a measured value of zero.</field>
     </message>
     <message id="287" name="GIMBAL_MANAGER_SET_PITCHYAW">
       <description>Set gimbal manager pitch and yaw angles (high rate message). This message is to be sent to the gimbal manager (e.g. from a ground station) and will be ignored by gimbal devices. Angles and rates can be set to NaN according to use case. Use MAV_CMD_DO_GIMBAL_MANAGER_PITCHYAW for low-rate adjustments that require confirmation.</description>
@@ -7623,7 +7656,13 @@
       <field type="uint16_t" name="vendor_specific_status_code">Vendor-specific status information.</field>
     </message>
     <message id="311" name="UAVCAN_NODE_INFO">
-      <description>General information describing a particular UAVCAN node. Please refer to the definition of the UAVCAN service "uavcan.protocol.GetNodeInfo" for the background information. This message should be emitted by the system whenever a new node appears online, or an existing node reboots. Additionally, it can be emitted upon request from the other end of the MAVLink channel (see MAV_CMD_UAVCAN_GET_NODE_INFO). It is also not prohibited to emit this message unconditionally at a low frequency. The UAVCAN specification is available at http://uavcan.org.</description>
+      <description>General information describing a particular UAVCAN node.
+        Please refer to the definition of the UAVCAN service "uavcan.protocol.GetNodeInfo" for the background information.
+        This message should be emitted by the system whenever a new node appears online, or an existing node reboots.
+        The message may also be explicitly requested using MAV_CMD_REQUEST_MESSAGE.
+        It is also not prohibited to emit this message unconditionally at a low frequency.
+        The DroneCAN specification is available at https://dronecan.github.io/Specification/1._Introduction/.
+      </description>
       <field type="uint64_t" name="time_usec" units="us">Timestamp (UNIX Epoch time or time since system boot). The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude of the number.</field>
       <field type="uint32_t" name="uptime_sec" units="s">Time since the start-up of the node.</field>
       <field type="char[80]" name="name">Node name string. For example, "sapog.px4.io".</field>
@@ -7735,7 +7774,13 @@
     </message>
     <!-- cellular status information -->
     <message id="334" name="CELLULAR_STATUS">
-      <description>Report current used cellular network status</description>
+      <description>Cellular network status as reported by a particular modem.
+      
+        This is primarily intended for logging, but a GCS may choose to display link_tx_rate and link_rx_rate.
+        
+        Note that a value of 0 in the id field indicates that the sender does not support reporting of multiple modems.
+        Message data should be from a single modem, but that is not guaranteed.
+      </description>
       <field type="uint8_t" name="status" enum="CELLULAR_STATUS_FLAG">Cellular modem status</field>
       <field type="uint8_t" name="failure_reason" enum="CELLULAR_NETWORK_FAILED_REASON">Failure reason when status in in CELLULAR_STATUS_FLAG_FAILED</field>
       <field type="uint8_t" name="type" enum="CELLULAR_NETWORK_RADIO_TYPE">Cellular network radio type: gsm, cdma, lte...</field>
@@ -7743,6 +7788,18 @@
       <field type="uint16_t" name="mcc" invalid="UINT16_MAX">Mobile country code. If unknown, set to UINT16_MAX</field>
       <field type="uint16_t" name="mnc" invalid="UINT16_MAX">Mobile network code. If unknown, set to UINT16_MAX</field>
       <field type="uint16_t" name="lac" invalid="0">Location area code. If unknown, set to 0</field>
+      <extensions/>
+      <field type="uint8_t" name="id" instance="true" minValue="1">Cellular modem instance number. Indexed from 1.</field>
+      <field type="uint32_t" name="link_tx_rate" units="KiB/s" invalid="0">Download rate.</field>
+      <field type="uint32_t" name="link_rx_rate" units="KiB/s" invalid="0">Upload rate.</field>
+      <field type="char[9]" name="cell_tower_id" invalid="0">ID of the currently connected cell tower. This must be NULL terminated if the length is less than 9 human-readable chars, and without the null termination (NULL) byte if the length is exactly 9 chars.</field>
+      <field type="uint8_t" name="band_number" invalid="0">LTE frequency band number.</field>
+      <field type="float" name="band_frequency" units="MHz" invalid="0">LTE radio frequency.</field>
+      <field type="uint32_t" name="channel_number" invalid="0">The channel number (CN). Absolute radio-frequency (ARFCN) / E-UTRA (EARFCN) / UTRA (UARFCN) / New radio (NR_CH).</field>
+      <field type="float" name="rx_level" units="dBm" invalid="0">On 3G is Received Signal Code Power (RSCP). On LTE is Reference Signal Received Power (RSRP). On 5G is New Radio Reference Signal Received Power (NR_RSRP).</field>
+      <field type="float" name="tx_level" units="dBm" invalid="0">Transmitter (modem) signal absolute power level.</field>
+      <field type="float" name="rx_quality" units="dBm" invalid="0">On 3G is Receiver Quality (RxQual). On LTE is Reference Signal Received Quality (RSRQ). On 5G is New Radio Reference Signal Received Quality (NR_RSRQ).</field>
+      <field type="float" name="sinr" units="dB" invalid="0">Signal to interference plus noise ratio (SINR).</field>
     </message>
     <message id="335" name="ISBD_LINK_STATUS">
       <description>Status of the Iridium SBD link.</description>
@@ -7966,6 +8023,24 @@
       <field type="uint32_t" name="id">Frame ID</field>
       <field type="uint8_t[8]" name="data">Frame data</field>
     </message>
+    <message id="387" name="CANFD_FRAME">
+      <description>A forwarded CANFD frame as requested by MAV_CMD_CAN_FORWARD. These are separated from CAN_FRAME as they need different handling (eg. TAO handling)</description>
+      <field type="uint8_t" name="target_system">System ID.</field>
+      <field type="uint8_t" name="target_component">Component ID.</field>
+      <field type="uint8_t" name="bus">bus number</field>
+      <field type="uint8_t" name="len">Frame length</field>
+      <field type="uint32_t" name="id">Frame ID</field>
+      <field type="uint8_t[64]" name="data">Frame data</field>
+    </message>
+    <message id="388" name="CAN_FILTER_MODIFY">
+      <description>Modify the filter of what CAN messages to forward over the mavlink. This can be used to make CAN forwarding work well on low bandwidth links. The filtering is applied on bits 8 to 24 of the CAN id (2nd and 3rd bytes) which corresponds to the DroneCAN message ID for DroneCAN. Filters with more than 16 IDs can be constructed by sending multiple CAN_FILTER_MODIFY messages.</description>
+      <field type="uint8_t" name="target_system">System ID.</field>
+      <field type="uint8_t" name="target_component">Component ID.</field>
+      <field type="uint8_t" name="bus">bus number</field>
+      <field type="uint8_t" name="operation" enum="CAN_FILTER_OP">what operation to perform on the filter list. See CAN_FILTER_OP enum.</field>
+      <field type="uint8_t" name="num_ids">number of IDs in filter list</field>
+      <field type="uint16_t[16]" name="ids">filter IDs, length num_ids</field>
+    </message>
     <message id="390" name="ONBOARD_COMPUTER_STATUS">
       <description>Hardware status sent by an onboard computer.</description>
       <field type="uint64_t" name="time_usec" units="us">Timestamp (UNIX Epoch time or time since system boot). The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude of the number.</field>
@@ -8134,24 +8209,6 @@
       <field type="float" name="max_strobe_period" units="s">Maximum strobing period in seconds</field>
     </message>
     <!-- The message ids 510 and 511 are reserved for ABSOLUTE_TARGET and RELATIVE_TARGET, currently in development.xml. -->
-    <message id="387" name="CANFD_FRAME">
-      <description>A forwarded CANFD frame as requested by MAV_CMD_CAN_FORWARD. These are separated from CAN_FRAME as they need different handling (eg. TAO handling)</description>
-      <field type="uint8_t" name="target_system">System ID.</field>
-      <field type="uint8_t" name="target_component">Component ID.</field>
-      <field type="uint8_t" name="bus">bus number</field>
-      <field type="uint8_t" name="len">Frame length</field>
-      <field type="uint32_t" name="id">Frame ID</field>
-      <field type="uint8_t[64]" name="data">Frame data</field>
-    </message>
-    <message id="388" name="CAN_FILTER_MODIFY">
-      <description>Modify the filter of what CAN messages to forward over the mavlink. This can be used to make CAN forwarding work well on low bandwidth links. The filtering is applied on bits 8 to 24 of the CAN id (2nd and 3rd bytes) which corresponds to the DroneCAN message ID for DroneCAN. Filters with more than 16 IDs can be constructed by sending multiple CAN_FILTER_MODIFY messages.</description>
-      <field type="uint8_t" name="target_system">System ID.</field>
-      <field type="uint8_t" name="target_component">Component ID.</field>
-      <field type="uint8_t" name="bus">bus number</field>
-      <field type="uint8_t" name="operation" enum="CAN_FILTER_OP">what operation to perform on the filter list. See CAN_FILTER_OP enum.</field>
-      <field type="uint8_t" name="num_ids">number of IDs in filter list</field>
-      <field type="uint16_t[16]" name="ids">filter IDs, length num_ids</field>
-    </message>
     <!-- Rover specific messages -->
     <message id="9000" name="WHEEL_DISTANCE">
       <description>Cumulative distance traveled for each reported wheel.</description>
