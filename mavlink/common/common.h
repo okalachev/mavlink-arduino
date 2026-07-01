@@ -10,7 +10,7 @@
     #error Wrong include order: MAVLINK_COMMON.H MUST NOT BE DIRECTLY USED. Include mavlink.h from the same directory instead or set ALL AND EVERY defines from MAVLINK.H manually accordingly, including the #define MAVLINK_H call.
 #endif
 
-#define MAVLINK_COMMON_XML_HASH -1613626329650901379
+#define MAVLINK_COMMON_XML_HASH -7635400868734327375
 
 #ifdef __cplusplus
 extern "C" {
@@ -1031,6 +1031,8 @@ typedef enum MAV_CMD
    MAV_CMD_CAN_FORWARD=32000, /* Request forwarding of CAN packets from the given CAN bus to this component via this MAVLink channel. CAN Frames are sent using CAN_FRAME and CANFD_FRAME messages |Bus number (0 to disable forwarding, 1 for first bus, 2 for 2nd bus, 3 for 3rd bus).| Empty.| Empty.| Empty.| Empty.| Empty.| Empty.|  */
    MAV_CMD_FIXED_MAG_CAL_YAW=42006, /* Magnetometer calibration based on provided known yaw. This allows for fast calibration using WMM field tables in the vehicle, given only the known yaw of the vehicle. If Latitude and longitude are both zero then use the current vehicle location. |Yaw of vehicle in earth frame.| CompassMask, 0 for all.| Latitude.| Longitude.| Empty.| Empty.| Empty.|  */
    MAV_CMD_DO_WINCH=42600, /* Command to operate winch. |Winch instance number.| Action to perform.| Length of line to release (negative to wind).| Release rate (negative to wind).| Empty.| Empty.| Empty.|  */
+   MAV_CMD_GUIDED_CHANGE_SPEED=43000, /* Change flight speed at a given rate. This slews the vehicle at a controllable rate between it's previous speed and the new one. |Airspeed or groundspeed.| Target Speed| Acceleration rate, 0 to take effect instantly| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)|  */
+   MAV_CMD_GUIDED_CHANGE_ALTITUDE=43001, /* Change target altitude at a given rate. This slews the vehicle at a controllable rate between it's previous altitude and the new one. |Reserved (default:0)| Reserved (default:0)| Rate of change, toward new altitude. 0 for maximum rate change. Positive numbers only, as negative numbers will not converge on the new target alt.| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)| Target Altitude|  */
    MAV_CMD_GUIDED_CHANGE_HEADING=43002, /* Change to target direction at a given rate, overriding previous heading/s. This slews the vehicle at a controllable rate between its previous heading and the new one. |Course-over-ground or raw vehicle heading.| Target heading.| Maximum centripetal acceleration, i.e. rate of change toward new heading.| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)|  */
    MAV_CMD_EXTERNAL_POSITION_ESTIMATE=43003, /* Provide an external position estimate for use when dead-reckoning. This is meant to be used for occasional position resets that may be provided by a external system such as a remote pilot using landmarks over a video link. |Timestamp that this message was sent as a time in the transmitters time domain. The sender should wrap this time back to zero based on required timing accuracy for the application and the limitations of a 32 bit float. For example, wrapping at 10 hours would give approximately 1ms accuracy. Recipient must handle time wrap in any timing jitter correction applied to this field. Wrap rollover time should not be at not more than 250 seconds, which would give approximately 10 microsecond accuracy.| The time spent in processing the sensor data that is the basis for this position. The recipient can use this to improve time alignment of the data. Set to zero if not known.| estimated one standard deviation accuracy of the measurement. Set to NaN if not known.| Empty| Latitude| Longitude| Altitude, not used. Should be sent as NaN. May be supported in a future version of this message.|  */
    MAV_CMD_ENUM_END=43004, /*  | */
@@ -1216,7 +1218,17 @@ typedef enum SERIAL_CONTROL_DEV
    SERIAL_CONTROL_DEV_TELEM2=1, /* Second telemetry port | */
    SERIAL_CONTROL_DEV_GPS1=2, /* First GPS port | */
    SERIAL_CONTROL_DEV_GPS2=3, /* Second GPS port | */
+   SERIAL_CONTROL_DEV_TELEM3=4, /* Third telemetry port | */
+   SERIAL_CONTROL_DEV_TELEM4=5, /* Fourth telemetry port | */
    SERIAL_CONTROL_DEV_SHELL=10, /* system shell | */
+   SERIAL_CONTROL_DEV_ESC0=20, /* Electronic Speed Controller 0 | */
+   SERIAL_CONTROL_DEV_ESC1=21, /* Electronic Speed Controller 1 | */
+   SERIAL_CONTROL_DEV_ESC2=22, /* Electronic Speed Controller 2 | */
+   SERIAL_CONTROL_DEV_ESC3=23, /* Electronic Speed Controller 3 | */
+   SERIAL_CONTROL_DEV_ESC4=24, /* Electronic Speed Controller 4 | */
+   SERIAL_CONTROL_DEV_ESC5=25, /* Electronic Speed Controller 5 | */
+   SERIAL_CONTROL_DEV_ESC6=26, /* Electronic Speed Controller 6 | */
+   SERIAL_CONTROL_DEV_ESC7=27, /* Electronic Speed Controller 7 | */
    SERIAL_CONTROL_SERIAL0=100, /* SERIAL0 | */
    SERIAL_CONTROL_SERIAL1=101, /* SERIAL1 | */
    SERIAL_CONTROL_SERIAL2=102, /* SERIAL2 | */
@@ -2615,9 +2627,12 @@ typedef enum MAG_CAL_STATUS
    MAG_CAL_RUNNING_STEP_TWO=3, /*  | */
    MAG_CAL_SUCCESS=4, /*  | */
    MAG_CAL_FAILED=5, /*  | */
-   MAG_CAL_BAD_ORIENTATION=6, /*  | */
-   MAG_CAL_BAD_RADIUS=7, /*  | */
-   MAG_CAL_STATUS_ENUM_END=8, /*  | */
+   MAG_CAL_FAILED_ORIENTATION=6, /* Compass calibration failed: the vehicle orientation is outside the required tolerance. | */
+   MAG_CAL_FAILED_RADIUS=7, /* Compass calibration failed: the radius of the fitted sphere is unrealistically small or large. | */
+   MAG_CAL_FAILED_OFFSETS=8, /* Compass calibration failed: offset magnitude too large. | */
+   MAG_CAL_FAILED_DIAG_SCALING=9, /* Compass calibration failed: diagonal or off-diagonal scaling values out of valid range. | */
+   MAG_CAL_FAILED_RESIDUALS_HIGH=10, /* Compass calibration failed: fitness (RMS residual) exceeds tolerance. | */
+   MAG_CAL_STATUS_ENUM_END=11, /*  | */
 } MAG_CAL_STATUS;
 #endif
 
