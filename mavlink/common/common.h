@@ -10,7 +10,7 @@
     #error Wrong include order: MAVLINK_COMMON.H MUST NOT BE DIRECTLY USED. Include mavlink.h from the same directory instead or set ALL AND EVERY defines from MAVLINK.H manually accordingly, including the #define MAVLINK_H call.
 #endif
 
-#define MAVLINK_COMMON_XML_HASH -7635400868734327375
+#define MAVLINK_COMMON_XML_HASH -9134431906004741457
 
 #ifdef __cplusplus
 extern "C" {
@@ -137,7 +137,11 @@ typedef enum MAV_SYS_STATUS_SENSOR_EXTENDED
 {
    MAV_SYS_STATUS_RECOVERY_SYSTEM=1, /* 0x01 Recovery system (parachute, balloon, retracts etc) | */
    MAV_SYS_STATUS_SENSOR_LEAK=2, /* 0x02 Leak detection | */
-   MAV_SYS_STATUS_SENSOR_EXTENDED_ENUM_END=3, /*  | */
+   MAV_SYS_STATUS_SENSOR_3D_GYRO3=4, /* 0x04 3rd 3D gyro | */
+   MAV_SYS_STATUS_SENSOR_3D_ACCEL3=8, /* 0x08 3rd 3D accelerometer | */
+   MAV_SYS_STATUS_SENSOR_3D_GYRO4=16, /* 0x10 4th 3D gyro | */
+   MAV_SYS_STATUS_SENSOR_3D_ACCEL4=32, /* 0x20 4th 3D accelerometer | */
+   MAV_SYS_STATUS_SENSOR_EXTENDED_ENUM_END=33, /*  | */
 } MAV_SYS_STATUS_SENSOR_EXTENDED;
 #endif
 
@@ -911,7 +915,7 @@ typedef enum MAV_CMD
    MAV_CMD_DO_ILLUMINATOR_CONFIGURE=406, /* Configures illuminator settings. An illuminator is a light source that is used for lighting up dark areas external to the system: e.g. a torch or searchlight (as opposed to a light source for illuminating the system itself, e.g. an indicator light). |Mode| 0%: Off, 100%: Max Brightness| Strobe period in seconds where 0 means strobing is not used| Strobe duty cycle where 100% means it is on constantly and 0 means strobing is not used| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)|  */
    MAV_CMD_GET_HOME_POSITION=410, /* Request the home position from the vehicle.
           The vehicle will ACK the command and emit the HOME_POSITION message. |Reserved| Reserved| Reserved| Reserved| Reserved| Reserved| Reserved|  */
-   MAV_CMD_INJECT_FAILURE=420, /* Inject artificial failure for testing purposes. Note that autopilots should implement an additional protection before accepting this command such as a specific param setting. |The unit which is affected by the failure.| The type how the failure manifests itself.| Instance affected by failure (0 to signal all).| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)|  */
+   MAV_CMD_INJECT_FAILURE=420, /* Inject artificial failure for testing purposes. Note that autopilots should implement an additional protection before accepting this command such as a specific param setting. |The unit which is affected by the failure.| The type how the failure manifests itself.| Instance affected by failure (0 to signal all). Takes precedence over Instance bitmask (param4) when not NaN. Set to NaN to use Instance bitmask instead.| Bitmask of instances affected by the failure (bit 0 = first instance, bit 1 = second instance, etc.). Used only when Instance (param3) is NaN.| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)|  */
    MAV_CMD_START_RX_PAIR=500, /* Starts receiver pairing. |RC type.| RC sub type.| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)|  */
    MAV_CMD_GET_MESSAGE_INTERVAL=510, /* 
           Request the interval between messages for a particular MAVLink message ID.
@@ -939,6 +943,12 @@ typedef enum MAV_CMD
    MAV_CMD_SET_CAMERA_SOURCE=534, /* Set camera source. Changes the camera's active sources on cameras with multiple image sensors. |Component Id of camera to address or 1-6 for non-MAVLink cameras, 0 for all cameras.| Primary Source| Secondary Source. If non-zero the second source will be displayed as picture-in-picture.| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)|  */
    MAV_CMD_JUMP_TAG=600, /* Tagged jump target. Can be jumped to with MAV_CMD_DO_JUMP_TAG. |Tag.| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)|  */
    MAV_CMD_DO_JUMP_TAG=601, /* Jump to the matching tag in the mission list. Repeat this action for the specified number of times. A mission should contain a single matching tag for each jump. If this is not the case then a jump to a missing tag should complete the mission, and a jump where there are multiple matching tags should always select the one with the lowest mission sequence number. |Target tag to jump to.| Repeat count.| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)|  */
+   MAV_CMD_DO_SET_GLOBAL_ORIGIN=611, /* Sets the GNSS coordinates of the vehicle local origin (0,0,0) position.
+          Vehicle should emit GPS_GLOBAL_ORIGIN irrespective of whether the origin is changed.
+          This enables transform between the local coordinate frame and the global (GNSS) coordinate frame, which may be necessary when (for example) indoor and outdoor settings are connected and the MAV should move from in- to outdoor.
+          This command supersedes SET_GPS_GLOBAL_ORIGIN.
+          Should be sent in a COMMAND_INT (Expected frame is MAV_FRAME_GLOBAL, and this should be assumed when sent in COMMAND_LONG).
+         |Reserved (default:0)| Reserved (default:0)| Reserved (default:0)| Reserved (default:0)| Latitude| Longitude| Altitude|  */
    MAV_CMD_DO_GIMBAL_MANAGER_PITCHYAW=1000, /* Set gimbal manager pitch/yaw setpoints (low rate command). It is possible to set combinations of the values below. E.g. an angle as well as a desired angular rate can be used to get to this angle at a certain angular rate, or an angular rate only will result in continuous turning. NaN is to be used to signal unset. Note: only the gimbal manager will react to this command - it will be ignored by a gimbal device. Use GIMBAL_MANAGER_SET_PITCHYAW if you need to stream pitch/yaw setpoints at higher rate.  |Pitch angle (positive to pitch up, relative to vehicle for FOLLOW mode, relative to world horizon for LOCK mode).| Yaw angle (positive to yaw to the right, relative to vehicle for FOLLOW mode, absolute to North for LOCK mode).| Pitch rate (positive to pitch up).| Yaw rate (positive to yaw to the right).| Gimbal manager flags to use.| Reserved (default:0)| Component ID of gimbal device to address (or 1-6 for non-MAVLink gimbal), 0 for all gimbal device components. Send command multiple times for more than one gimbal (but not all gimbals).|  */
    MAV_CMD_DO_GIMBAL_MANAGER_CONFIGURE=1001, /* Gimbal configuration to set which sysid/compid is in primary and secondary control. |Sysid for primary control (0: no one in control, -1: leave unchanged, -2: set itself in control (for missions where the own sysid is still unknown), -3: remove control if currently in control).| Compid for primary control (0: no one in control, -1: leave unchanged, -2: set itself in control (for missions where the own sysid is still unknown), -3: remove control if currently in control).| Sysid for secondary control (0: no one in control, -1: leave unchanged, -2: set itself in control (for missions where the own sysid is still unknown), -3: remove control if currently in control).| Compid for secondary control (0: no one in control, -1: leave unchanged, -2: set itself in control (for missions where the own sysid is still unknown), -3: remove control if currently in control).| Reserved (default:0)| Reserved (default:0)| Component ID of gimbal device to address (or 1-6 for non-MAVLink gimbal), 0 for all gimbal device components. Send command multiple times for more than one gimbal (but not all gimbals).|  */
    MAV_CMD_IMAGE_START_CAPTURE=2000, /* Start image capture sequence. CAMERA_IMAGE_CAPTURED must be emitted after each capture.
@@ -2555,12 +2565,14 @@ typedef enum FAILURE_UNIT
    FAILURE_UNIT_SENSOR_DISTANCE_SENSOR=7, /*  | */
    FAILURE_UNIT_SENSOR_AIRSPEED=8, /*  | */
    FAILURE_UNIT_SYSTEM_BATTERY=100, /*  | */
-   FAILURE_UNIT_SYSTEM_MOTOR=101, /*  | */
+   FAILURE_UNIT_SYSTEM_MOTOR=101, /* Interrupts the commanded output to the motor. | */
    FAILURE_UNIT_SYSTEM_SERVO=102, /*  | */
    FAILURE_UNIT_SYSTEM_AVOIDANCE=103, /*  | */
    FAILURE_UNIT_SYSTEM_RC_SIGNAL=104, /*  | */
    FAILURE_UNIT_SYSTEM_MAVLINK_SIGNAL=105, /*  | */
-   FAILURE_UNIT_ENUM_END=106, /*  | */
+   FAILURE_UNIT_SYSTEM_ESC=106, /* Interrupts the telemetry reported by the ESC. | */
+   FAILURE_UNIT_SYSTEM_TRAFFIC_AVOIDANCE=107, /* Traffic avoidance system like ADS-B or FLARM. | */
+   FAILURE_UNIT_ENUM_END=108, /*  | */
 } FAILURE_UNIT;
 #endif
 
@@ -2577,7 +2589,8 @@ typedef enum FAILURE_TYPE
    FAILURE_TYPE_SLOW=5, /* Unit is slow, so e.g. reporting at slower than expected rate. | */
    FAILURE_TYPE_DELAYED=6, /* Data of unit is delayed in time. | */
    FAILURE_TYPE_INTERMITTENT=7, /* Unit is sometimes working, sometimes not. | */
-   FAILURE_TYPE_ENUM_END=8, /*  | */
+   FAILURE_TYPE_DRIFT=8, /* Unit is publishing plausible values but drifting away from true values. | */
+   FAILURE_TYPE_ENUM_END=9, /*  | */
 } FAILURE_TYPE;
 #endif
 
