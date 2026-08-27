@@ -67,6 +67,9 @@
       <entry value="20" name="MAV_AUTOPILOT_REFLEX">
         <description>Fusion Reflex - https://fusion.engineering</description>
       </entry>
+      <entry value="21" name="MAV_AUTOPILOT_FLIX">
+        <description>Flix quadcopter - https://quadcopter.dev</description>
+      </entry>
     </enum>
     <enum name="MAV_TYPE">
       <description>MAVLINK component type reported in HEARTBEAT message. Flight controllers must report the type of the vehicle on which they are mounted (e.g. MAV_TYPE_OCTOROTOR). All other components must report a value appropriate for their type (e.g. a camera must use MAV_TYPE_CAMERA).</description>
@@ -225,7 +228,7 @@
     <enum name="MAV_MODE_FLAG" bitmask="true">
       <description>These flags encode the MAV mode, see MAV_MODE enum for useful combinations.</description>
       <entry value="128" name="MAV_MODE_FLAG_SAFETY_ARMED">
-        <description>0b10000000 MAV safety set to armed. Motors are enabled / running / can start. Ready to fly. Additional note: this flag is to be ignore when sent in the command MAV_CMD_DO_SET_MODE and MAV_CMD_COMPONENT_ARM_DISARM shall be used instead. The flag can still be used to report the armed state.</description>
+        <description>0b10000000 MAV safety set to armed. Motors are enabled / running / can start. Ready to fly. Additional note: this flag is to be ignored when sent in the command MAV_CMD_DO_SET_MODE and MAV_CMD_COMPONENT_ARM_DISARM shall be used instead. The flag can still be used to report the armed state.</description>
       </entry>
       <entry value="64" name="MAV_MODE_FLAG_MANUAL_INPUT_ENABLED">
         <description>0b01000000 remote control input is enabled.</description>
@@ -307,14 +310,14 @@
     </enum>
     <enum name="MAV_COMPONENT">
       <description>Legacy component ID values for particular types of hardware/software that might make up a MAVLink system (autopilot, cameras, servos, avoidance systems etc.).
-      
+
         Components are not required or expected to use IDs with names that correspond to their type or function, but may choose to do so.
         Using an ID that matches the type may slightly reduce the chances of component id clashes, as, for historical reasons, it is less likely to be used by some other type of component.
         System integration will still need to ensure that all components have unique IDs.
 
         Component IDs are used for addressing messages to a particular component within a system.
         A component can use any unique ID between 1 and 255 (MAV_COMP_ID_ALL value is the broadcast address, used to send to all components).
-        
+
         Historically component ID were also used for identifying the type of component.
         New code must not use component IDs to infer the component type, but instead check the MAV_TYPE in the HEARTBEAT message!
       </description>
