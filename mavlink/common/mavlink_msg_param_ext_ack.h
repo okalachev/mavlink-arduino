@@ -7,8 +7,8 @@
 
 
 typedef struct __mavlink_param_ext_ack_t {
- char param_id[16]; /*<  Parameter id, terminated by NULL if the length is less than 16 human-readable chars and WITHOUT null termination (NULL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string*/
- char param_value[128]; /*<  Parameter value (new value if PARAM_ACK_ACCEPTED, current value otherwise)*/
+ char param_id[16]; /*<  Parameter id, terminated by NULL if the length is less than 16 human-readable chars and WITHOUT null termination (NULL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string. Encoded as 7-bit ASCII.*/
+ char param_value[128]; /*<  Parameter value (new value if PARAM_ACK_ACCEPTED, current value otherwise). Raw bytes, interpreted according to param_type; not a text string.*/
  uint8_t param_type; /*<  Parameter type.*/
  uint8_t param_result; /*<  Result code.*/
 } mavlink_param_ext_ack_t;
@@ -53,13 +53,13 @@ typedef struct __mavlink_param_ext_ack_t {
  * @param component_id ID of this component (e.g. 200 for IMU)
  * @param msg The MAVLink message to compress the data into
  *
- * @param param_id  Parameter id, terminated by NULL if the length is less than 16 human-readable chars and WITHOUT null termination (NULL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string
- * @param param_value  Parameter value (new value if PARAM_ACK_ACCEPTED, current value otherwise)
+ * @param param_id  Parameter id, terminated by NULL if the length is less than 16 human-readable chars and WITHOUT null termination (NULL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string. Encoded as 7-bit ASCII.
+ * @param param_value  Parameter value (new value if PARAM_ACK_ACCEPTED, current value otherwise). Raw bytes, interpreted according to param_type; not a text string.
  * @param param_type  Parameter type.
  * @param param_result  Result code.
  * @return length of the message in bytes (excluding serial stream start sign)
  */
-static inline uint16_t mavlink_msg_param_ext_ack_pack(uint8_t system_id, uint8_t component_id, mavlink_message_t* msg,
+static inline uint16_t mavlink_msg_param_ext_ack_pack(uint32_t system_id, uint8_t component_id, mavlink_message_t* msg,
                                const char *param_id, const char *param_value, uint8_t param_type, uint8_t param_result)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
@@ -89,13 +89,13 @@ static inline uint16_t mavlink_msg_param_ext_ack_pack(uint8_t system_id, uint8_t
  * @param status MAVLink status structure
  * @param msg The MAVLink message to compress the data into
  *
- * @param param_id  Parameter id, terminated by NULL if the length is less than 16 human-readable chars and WITHOUT null termination (NULL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string
- * @param param_value  Parameter value (new value if PARAM_ACK_ACCEPTED, current value otherwise)
+ * @param param_id  Parameter id, terminated by NULL if the length is less than 16 human-readable chars and WITHOUT null termination (NULL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string. Encoded as 7-bit ASCII.
+ * @param param_value  Parameter value (new value if PARAM_ACK_ACCEPTED, current value otherwise). Raw bytes, interpreted according to param_type; not a text string.
  * @param param_type  Parameter type.
  * @param param_result  Result code.
  * @return length of the message in bytes (excluding serial stream start sign)
  */
-static inline uint16_t mavlink_msg_param_ext_ack_pack_status(uint8_t system_id, uint8_t component_id, mavlink_status_t *_status, mavlink_message_t* msg,
+static inline uint16_t mavlink_msg_param_ext_ack_pack_status(uint32_t system_id, uint8_t component_id, mavlink_status_t *_status, mavlink_message_t* msg,
                                const char *param_id, const char *param_value, uint8_t param_type, uint8_t param_result)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
@@ -118,7 +118,7 @@ static inline uint16_t mavlink_msg_param_ext_ack_pack_status(uint8_t system_id, 
 #if MAVLINK_CRC_EXTRA
     return mavlink_finalize_message_buffer(msg, system_id, component_id, _status, MAVLINK_MSG_ID_PARAM_EXT_ACK_MIN_LEN, MAVLINK_MSG_ID_PARAM_EXT_ACK_LEN, MAVLINK_MSG_ID_PARAM_EXT_ACK_CRC);
 #else
-    return mavlink_finalize_message_buffer(msg, system_id, component_id, _status, MAVLINK_MSG_ID_PARAM_EXT_ACK_MIN_LEN, MAVLINK_MSG_ID_PARAM_EXT_ACK_LEN);
+    return mavlink_finalize_message_buffer(msg, system_id, component_id, _status, MAVLINK_MSG_ID_PARAM_EXT_ACK_MIN_LEN, MAVLINK_MSG_ID_PARAM_EXT_ACK_LEN, 0);
 #endif
 }
 
@@ -128,13 +128,13 @@ static inline uint16_t mavlink_msg_param_ext_ack_pack_status(uint8_t system_id, 
  * @param component_id ID of this component (e.g. 200 for IMU)
  * @param chan The MAVLink channel this message will be sent over
  * @param msg The MAVLink message to compress the data into
- * @param param_id  Parameter id, terminated by NULL if the length is less than 16 human-readable chars and WITHOUT null termination (NULL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string
- * @param param_value  Parameter value (new value if PARAM_ACK_ACCEPTED, current value otherwise)
+ * @param param_id  Parameter id, terminated by NULL if the length is less than 16 human-readable chars and WITHOUT null termination (NULL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string. Encoded as 7-bit ASCII.
+ * @param param_value  Parameter value (new value if PARAM_ACK_ACCEPTED, current value otherwise). Raw bytes, interpreted according to param_type; not a text string.
  * @param param_type  Parameter type.
  * @param param_result  Result code.
  * @return length of the message in bytes (excluding serial stream start sign)
  */
-static inline uint16_t mavlink_msg_param_ext_ack_pack_chan(uint8_t system_id, uint8_t component_id, uint8_t chan,
+static inline uint16_t mavlink_msg_param_ext_ack_pack_chan(uint32_t system_id, uint8_t component_id, uint8_t chan,
                                mavlink_message_t* msg,
                                    const char *param_id,const char *param_value,uint8_t param_type,uint8_t param_result)
 {
@@ -166,7 +166,7 @@ static inline uint16_t mavlink_msg_param_ext_ack_pack_chan(uint8_t system_id, ui
  * @param msg The MAVLink message to compress the data into
  * @param param_ext_ack C-struct to read the message contents from
  */
-static inline uint16_t mavlink_msg_param_ext_ack_encode(uint8_t system_id, uint8_t component_id, mavlink_message_t* msg, const mavlink_param_ext_ack_t* param_ext_ack)
+static inline uint16_t mavlink_msg_param_ext_ack_encode(uint32_t system_id, uint8_t component_id, mavlink_message_t* msg, const mavlink_param_ext_ack_t* param_ext_ack)
 {
     return mavlink_msg_param_ext_ack_pack(system_id, component_id, msg, param_ext_ack->param_id, param_ext_ack->param_value, param_ext_ack->param_type, param_ext_ack->param_result);
 }
@@ -180,7 +180,7 @@ static inline uint16_t mavlink_msg_param_ext_ack_encode(uint8_t system_id, uint8
  * @param msg The MAVLink message to compress the data into
  * @param param_ext_ack C-struct to read the message contents from
  */
-static inline uint16_t mavlink_msg_param_ext_ack_encode_chan(uint8_t system_id, uint8_t component_id, uint8_t chan, mavlink_message_t* msg, const mavlink_param_ext_ack_t* param_ext_ack)
+static inline uint16_t mavlink_msg_param_ext_ack_encode_chan(uint32_t system_id, uint8_t component_id, uint8_t chan, mavlink_message_t* msg, const mavlink_param_ext_ack_t* param_ext_ack)
 {
     return mavlink_msg_param_ext_ack_pack_chan(system_id, component_id, chan, msg, param_ext_ack->param_id, param_ext_ack->param_value, param_ext_ack->param_type, param_ext_ack->param_result);
 }
@@ -194,7 +194,7 @@ static inline uint16_t mavlink_msg_param_ext_ack_encode_chan(uint8_t system_id, 
  * @param msg The MAVLink message to compress the data into
  * @param param_ext_ack C-struct to read the message contents from
  */
-static inline uint16_t mavlink_msg_param_ext_ack_encode_status(uint8_t system_id, uint8_t component_id, mavlink_status_t* _status, mavlink_message_t* msg, const mavlink_param_ext_ack_t* param_ext_ack)
+static inline uint16_t mavlink_msg_param_ext_ack_encode_status(uint32_t system_id, uint8_t component_id, mavlink_status_t* _status, mavlink_message_t* msg, const mavlink_param_ext_ack_t* param_ext_ack)
 {
     return mavlink_msg_param_ext_ack_pack_status(system_id, component_id, _status, msg,  param_ext_ack->param_id, param_ext_ack->param_value, param_ext_ack->param_type, param_ext_ack->param_result);
 }
@@ -203,8 +203,8 @@ static inline uint16_t mavlink_msg_param_ext_ack_encode_status(uint8_t system_id
  * @brief Send a param_ext_ack message
  * @param chan MAVLink channel to send the message
  *
- * @param param_id  Parameter id, terminated by NULL if the length is less than 16 human-readable chars and WITHOUT null termination (NULL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string
- * @param param_value  Parameter value (new value if PARAM_ACK_ACCEPTED, current value otherwise)
+ * @param param_id  Parameter id, terminated by NULL if the length is less than 16 human-readable chars and WITHOUT null termination (NULL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string. Encoded as 7-bit ASCII.
+ * @param param_value  Parameter value (new value if PARAM_ACK_ACCEPTED, current value otherwise). Raw bytes, interpreted according to param_type; not a text string.
  * @param param_type  Parameter type.
  * @param param_result  Result code.
  */
@@ -279,7 +279,7 @@ static inline void mavlink_msg_param_ext_ack_send_buf(mavlink_message_t *msgbuf,
 /**
  * @brief Get field param_id from param_ext_ack message
  *
- * @return  Parameter id, terminated by NULL if the length is less than 16 human-readable chars and WITHOUT null termination (NULL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string
+ * @return  Parameter id, terminated by NULL if the length is less than 16 human-readable chars and WITHOUT null termination (NULL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string. Encoded as 7-bit ASCII.
  */
 static inline uint16_t mavlink_msg_param_ext_ack_get_param_id(const mavlink_message_t* msg, char *param_id)
 {
@@ -289,7 +289,7 @@ static inline uint16_t mavlink_msg_param_ext_ack_get_param_id(const mavlink_mess
 /**
  * @brief Get field param_value from param_ext_ack message
  *
- * @return  Parameter value (new value if PARAM_ACK_ACCEPTED, current value otherwise)
+ * @return  Parameter value (new value if PARAM_ACK_ACCEPTED, current value otherwise). Raw bytes, interpreted according to param_type; not a text string.
  */
 static inline uint16_t mavlink_msg_param_ext_ack_get_param_value(const mavlink_message_t* msg, char *param_value)
 {
@@ -334,4 +334,5 @@ static inline void mavlink_msg_param_ext_ack_decode(const mavlink_message_t* msg
         memset(param_ext_ack, 0, MAVLINK_MSG_ID_PARAM_EXT_ACK_LEN);
     memcpy(param_ext_ack, _MAV_PAYLOAD(msg), len);
 #endif
+
 }
