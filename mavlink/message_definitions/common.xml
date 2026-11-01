@@ -149,7 +149,7 @@
         <description>0x4000 x/y position control</description>
       </entry>
       <entry value="32768" name="MAV_SYS_STATUS_SENSOR_MOTOR_OUTPUTS">
-        <description>0x8000 motor outputs / control</description>
+        <description>0x8000 Motor outputs enabled (safety off). Enabled if motor outputs are not inhibited by a safety switch. The health bit for this sensor is not used and should always be set (report ESC, motor and propeller health using MAV_SYS_STATUS_SENSOR_PROPULSION).</description>
       </entry>
       <entry value="65536" name="MAV_SYS_STATUS_SENSOR_RC_RECEIVER">
         <description>0x10000 RC receiver</description>
@@ -361,7 +361,6 @@
       </entry>
     </enum>
     <enum name="FENCE_MITIGATE">
-      <!-- This enum is work-in-progress and it can therefore change. It should NOT be used in stable production environments. -->
       <description>Actions being taken to mitigate/prevent fence breach</description>
       <entry value="0" name="FENCE_MITIGATE_UNKNOWN">
         <description>Unknown</description>
@@ -704,7 +703,6 @@
       </entry>
     </enum>
     <enum name="ESC_CONNECTION_TYPE">
-      <!-- This enum is work-in-progress and it can therefore change. It should NOT be used in stable production environments. -->
       <description>Indicates the ESC connection type.</description>
       <entry value="0" name="ESC_CONNECTION_TYPE_PPM">
         <description>Traditional PPM ESC.</description>
@@ -726,7 +724,6 @@
       </entry>
     </enum>
     <enum name="ESC_FAILURE_FLAGS" bitmask="true">
-      <!-- This enum is work-in-progress and it can therefore change. It should NOT be used in stable production environments. -->
       <description>Flags to report ESC failures.</description>
       <entry value="1" name="ESC_FAILURE_OVER_CURRENT">
         <description>Over current failure.</description>
@@ -1606,9 +1603,9 @@
         <param index="2">Empty</param>
         <param index="3">Empty</param>
         <param index="4">Empty</param>
-        <param index="5" label="Latitude">Latitudee. 0: not used.</param>
-        <param index="6" label="Longitude">Longitudee. 0: not used.</param>
-        <param index="7" label="Altitude" units="m">Altitudee. 0: not used.</param>
+        <param index="5" label="Latitude">Latitude. 0: not used.</param>
+        <param index="6" label="Longitude">Longitude. 0: not used.</param>
+        <param index="7" label="Altitude" units="m">Altitude. 0: not used.</param>
       </entry>
       <entry value="189" name="MAV_CMD_DO_LAND_START" hasLocation="true" isDestination="false" mission="true" command="true">
         <description>Mission item to mark the start of a mission landing pattern, or a command to land with a mission landing pattern.
@@ -2646,6 +2643,15 @@
         <param index="6" label="Longitude">Longitude</param>
         <param index="7" label="Altitude" units="m">Altitude, not used. Should be sent as NaN. May be supported in a future version of this message.</param>
       </entry>
+      <entry value="43004" name="MAV_CMD_EXTERNAL_WIND_ESTIMATE" hasLocation="false" isDestination="false" command="true">
+        <description>Set an external estimate of wind direction and speed.
+          This might be used to provide an initial wind estimate to the estimator (EKF) in the case where the vehicle is wind dead-reckoning, extending the time when operating without GPS before position drift builds to an unsafe level. For this use case the command might reasonably be sent every few minutes when operating at altitude, and the value is cleared if the estimator resets itself.
+        </description>
+        <param index="1" label="Wind speed" units="m/s" minValue="0">Horizontal wind speed.</param>
+        <param index="2" label="Wind speed accuracy" units="m/s">Estimated 1 sigma accuracy of wind speed. Set to NaN if unknown.</param>
+        <param index="3" label="Direction" units="deg" minValue="0" maxValue="360">Azimuth (relative to true north) from where the wind is blowing.</param>
+        <param index="4" label="Direction accuracy" units="deg">Estimated 1 sigma accuracy of wind direction. Set to NaN if unknown.</param>
+      </entry>
       <!-- END of payload range (30000 to 30999) -->
       <!-- BEGIN user defined range (31000 to 31999) -->
       <entry value="31000" name="MAV_CMD_WAYPOINT_USER_1" hasLocation="true" isDestination="true" mission="true">
@@ -2994,7 +3000,8 @@
         <description>Command is invalid because a frame is required and the specified frame is not supported.</description>
       </entry>
       <entry value="10" name="MAV_RESULT_NOT_IN_CONTROL">
-        <wip/>
+        <wip since="2025-09"/>
+        <!-- This entry is work-in-progress and it can therefore change. It should NOT be used in stable production environments. -->
         <description>Command has been rejected because source system is not in control of the target system/component.</description>
       </entry>
     </enum>
@@ -3946,7 +3953,8 @@
         <description>Camera supports absolute thermal range (request CAMERA_THERMAL_RANGE with MAV_CMD_REQUEST_MESSAGE).</description>
       </entry>
       <entry value="8192" name="CAMERA_CAP_FLAGS_HAS_MTI">
-        <wip/>
+        <wip since="2025-08"/>
+        <!-- This entry is work-in-progress and it can therefore change. It should NOT be used in stable production environments. -->
         <description>Camera supports Moving Target Indicators (MTI) on the camera view (using MAV_CMD_CAMERA_START_MTI).</description>
       </entry>
     </enum>
@@ -3978,6 +3986,13 @@
       </entry>
       <entry value="4" name="VIDEO_STREAM_TYPE_WHEP">
         <description>Stream is WHEP (WebRTC-HTTP Egress Protocol)</description>
+      </entry>
+      <entry value="5" name="VIDEO_STREAM_TYPE_SRT">
+        <description>Stream is SRT (Secure Reliable Transport).
+          The payload is MPEG-TS (as for VIDEO_STREAM_TYPE_MPEG_TS); streams other than video (e.g. KLV metadata, audio) may be ignored.
+          VIDEO_STREAM_INFORMATION.uri is a full URI with the prefix `srt://host:port` followed by query parameters.
+          Recognised parameters include: mode (caller, listener or rendezvous), latency (ms), streamid (opaque string, e.g. for hub access control).
+          Encryption passphrases should be exchanged out of band rather than in the URI, as MAVLink messages are not encrypted.</description>
       </entry>
     </enum>
     <enum name="VIDEO_STREAM_ENCODING">
@@ -4936,7 +4951,6 @@
       </entry>
     </enum>
     <enum name="FAILURE_UNIT">
-      <!-- This enum is work-in-progress and it can therefore change. It should NOT be used in stable production environments. -->
       <description>List of possible units where failures can be injected.</description>
       <entry value="0" name="FAILURE_UNIT_SENSOR_GYRO"/>
       <entry value="1" name="FAILURE_UNIT_SENSOR_ACCEL"/>
@@ -4978,7 +4992,6 @@
       </entry>
     </enum>
     <enum name="FAILURE_TYPE">
-      <!-- This enum is work-in-progress and it can therefore change. It should NOT be used in stable production environments. -->
       <description>List of possible failure type to inject.</description>
       <entry value="0" name="FAILURE_TYPE_OK">
         <description>No failure injected, used to reset a previous failure.</description>
@@ -6191,7 +6204,7 @@
       <field type="uint8_t" name="target_component">Component ID of the target recipient. This is the ID of the system that sent the command for which this COMMAND_ACK is an acknowledgement.</field>
     </message>
     <message id="80" name="COMMAND_CANCEL">
-      <wip/>
+      <wip since="2020-06"/>
       <!-- This message is work-in-progress and it can therefore change. It should NOT be used in stable production environments. -->
       <description>Cancel a long running command. The target system should respond with a COMMAND_ACK to the original command with result=MAV_RESULT_CANCELLED if the long running process was cancelled. If it has already completed, the cancel action can be ignored. The cancel action can be retried until some sort of acknowledgement to the original command has been received. The command microservice is documented at https://mavlink.io/en/services/command.html</description>
       <field type="uint8_t" name="target_system">System executing long running command. Should not be broadcast (0).</field>
@@ -6273,7 +6286,7 @@
       <field type="uint32_t" name="time_boot_ms" units="ms">Timestamp (time since system boot). The rationale for the timestamp in the setpoint is to allow the system to compensate for the transport delay of the setpoint. This allows the system to compensate processing latency.</field>
       <field type="uint8_t" name="target_system">System ID</field>
       <field type="uint8_t" name="target_component">Component ID</field>
-      <field type="uint8_t" name="coordinate_frame" enum="MAV_FRAME">Valid options are: MAV_FRAME_GLOBAL = 0, MAV_FRAME_GLOBAL_RELATIVE_ALT = 3, MAV_FRAME_GLOBAL_TERRAIN_ALT = 10 (MAV_FRAME_GLOBAL_INT, MAV_FRAME_GLOBAL_RELATIVE_ALT_INT, MAV_FRAME_GLOBAL_TERRAIN_ALT_INT are allowed synonyms, but have been deprecated)</field>
+      <field type="uint8_t" name="coordinate_frame" enum="MAV_FRAME">Valid options are: MAV_FRAME_GLOBAL = 0, MAV_FRAME_GLOBAL_RELATIVE_ALT = 3, MAV_FRAME_GLOBAL_TERRAIN_ALT = 10 (MAV_FRAME_GLOBAL_INT, MAV_FRAME_GLOBAL_RELATIVE_ALT_INT, MAV_FRAME_GLOBAL_TERRAIN_ALT_INT are allowed synonyms, but have been superseded)</field>
       <field type="uint16_t" name="type_mask" enum="POSITION_TARGET_TYPEMASK">Bitmap to indicate which dimensions should be ignored by the vehicle.</field>
       <field type="int32_t" name="lat_int" units="degE7">Latitude in WGS84 frame</field>
       <field type="int32_t" name="lon_int" units="degE7">Longitude in WGS84 frame</field>
@@ -6290,7 +6303,7 @@
     <message id="87" name="POSITION_TARGET_GLOBAL_INT">
       <description>Reports the current commanded vehicle position, velocity, and acceleration as specified by the autopilot. This should match the commands sent in SET_POSITION_TARGET_GLOBAL_INT if the vehicle is being controlled this way.</description>
       <field type="uint32_t" name="time_boot_ms" units="ms">Timestamp (time since system boot). The rationale for the timestamp in the setpoint is to allow the system to compensate for the transport delay of the setpoint. This allows the system to compensate processing latency.</field>
-      <field type="uint8_t" name="coordinate_frame" enum="MAV_FRAME">Valid options are: MAV_FRAME_GLOBAL = 0, MAV_FRAME_GLOBAL_RELATIVE_ALT = 3, MAV_FRAME_GLOBAL_TERRAIN_ALT = 10 (MAV_FRAME_GLOBAL_INT, MAV_FRAME_GLOBAL_RELATIVE_ALT_INT, MAV_FRAME_GLOBAL_TERRAIN_ALT_INT are allowed synonyms, but have been deprecated)</field>
+      <field type="uint8_t" name="coordinate_frame" enum="MAV_FRAME">Valid options are: MAV_FRAME_GLOBAL = 0, MAV_FRAME_GLOBAL_RELATIVE_ALT = 3, MAV_FRAME_GLOBAL_TERRAIN_ALT = 10 (MAV_FRAME_GLOBAL_INT, MAV_FRAME_GLOBAL_RELATIVE_ALT_INT, MAV_FRAME_GLOBAL_TERRAIN_ALT_INT are allowed synonyms, but have been superseded)</field>
       <field type="uint16_t" name="type_mask" enum="POSITION_TARGET_TYPEMASK">Bitmap to indicate which dimensions should be ignored by the vehicle.</field>
       <field type="int32_t" name="lat_int" units="degE7">Latitude in WGS84 frame</field>
       <field type="int32_t" name="lon_int" units="degE7">Longitude in WGS84 frame</field>
@@ -7441,10 +7454,11 @@
       <field type="uint16_t" name="rotation" units="deg">Video image rotation clockwise.</field>
       <field type="uint16_t" name="hfov" units="deg">Horizontal Field of view.</field>
       <field type="char[32]" name="name">Stream name.</field>
-      <field type="char[160]" name="uri">Video stream URI (TCP or RTSP URI ground station should connect to) or port number (UDP port ground station should listen to).</field>
+      <field type="char[160]" name="uri">Video stream URI (TCP, RTSP or SRT URI ground station should connect to) or port number (UDP port ground station should listen to).</field>
       <extensions/>
       <field type="uint8_t" name="encoding" enum="VIDEO_STREAM_ENCODING">Encoding of stream.</field>
       <field type="uint8_t" name="camera_device_id" default="0" minValue="0" maxValue="6">Camera id of a non-MAVLink camera attached to an autopilot (1-6).  0 if the component is a MAVLink camera (with its own component id).</field>
+      <field type="uint16_t" name="vfov" units="cdeg" invalid="0">Vertical field of view (0 if unknown).</field>
     </message>
     <message id="270" name="VIDEO_STREAM_STATUS">
       <description>Information about the status of a video stream. It may be requested using MAV_CMD_REQUEST_MESSAGE.</description>
@@ -7458,9 +7472,10 @@
       <field type="uint16_t" name="hfov" units="deg">Horizontal Field of view</field>
       <extensions/>
       <field type="uint8_t" name="camera_device_id" default="0" minValue="0" maxValue="6">Camera id of a non-MAVLink camera attached to an autopilot (1-6).  0 if the component is a MAVLink camera (with its own component id).</field>
+      <field type="uint16_t" name="vfov" units="cdeg" invalid="0">Vertical field of view (0 if unknown).</field>
     </message>
     <message id="271" name="CAMERA_FOV_STATUS">
-      <description>Information about the field of view of a camera. Can be requested with a MAV_CMD_REQUEST_MESSAGE command.</description>
+      <description>Information about the field of view of a camera. Can be requested with a MAV_CMD_REQUEST_MESSAGE command, where param2 indicates the video stream id: 0 for all streams, 1 for first, 2 for second, etc. A camera with multiple streams that have different fields of view should send one message per stream, with stream_id set.</description>
       <field type="uint32_t" name="time_boot_ms" units="ms">Timestamp (time since system boot).</field>
       <field type="int32_t" name="lat_camera" units="degE7" invalid="INT32_MAX">Latitude of camera (INT32_MAX if unknown).</field>
       <field type="int32_t" name="lon_camera" units="degE7" invalid="INT32_MAX">Longitude of camera (INT32_MAX if unknown).</field>
@@ -7473,6 +7488,7 @@
       <field type="float" name="vfov" units="deg" invalid="NaN">Vertical field of view (NaN if unknown).</field>
       <extensions/>
       <field type="uint8_t" name="camera_device_id" default="0" minValue="0" maxValue="6">Camera id of a non-MAVLink camera attached to an autopilot (1-6).  0 if the component is a MAVLink camera (with its own component id).</field>
+      <field type="uint8_t" name="stream_id" instance="true" invalid="0">Video Stream ID (1 for first, 2 for second, etc.), as in VIDEO_STREAM_INFORMATION. 0 if unknown or the field of view is not specific to a stream.</field>
     </message>
     <message id="275" name="CAMERA_TRACKING_IMAGE_STATUS">
       <description>Camera tracking status, sent while in active tracking. Use MAV_CMD_SET_MESSAGE_INTERVAL to define message interval.</description>
@@ -8037,7 +8053,8 @@
       <field type="uint32_t" name="fuel_type" enum="MAV_FUEL_TYPE">Fuel type. Defines units for fuel capacity and consumption fields above.</field>
     </message>
     <message id="372" name="BATTERY_INFO">
-      <wip/>
+      <wip since="2024-02"/>
+      <!-- This message is work-in-progress and it can therefore change. It should NOT be used in stable production environments. -->
       <description>
         Battery information that is static, or requires infrequent update.
         This message should requested using MAV_CMD_REQUEST_MESSAGE and/or streamed at very low rate.
@@ -8094,8 +8111,8 @@
       <field type="uint16_t" name="present" display="bitmask">Relay present. Relay instance numbers are represented as individual bits in this mask by offset.  Bits will be true if a relay instance is configured.</field>
     </message>
     <message id="380" name="TIME_ESTIMATE_TO_TARGET">
-      <wip/>
-      <!-- This message is work-in-progress it can therefore change, and should NOT be used in stable production environments -->
+      <wip since="2019-04"/>
+      <!-- This message is work-in-progress and it can therefore change. It should NOT be used in stable production environments. -->
       <description>Time/duration estimates for various events and actions given the current vehicle state and position.</description>
       <field type="int32_t" name="safe_return" units="s">Estimated time to complete the vehicle's configured "safe return" action from its current position (e.g. RTL, Smart RTL, etc.). -1 indicates that the vehicle is landed, or that no time estimate available.</field>
       <field type="int32_t" name="land" units="s">Estimated time for vehicle to complete the LAND action from its current position. -1 indicates that the vehicle is landed, or that no time estimate available.</field>
